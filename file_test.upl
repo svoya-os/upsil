@@ -1,0 +1,7 @@
+fun main() {
+    print("Writing to file natively from LLVM...\n")
+    val f = fopen("output.txt", "w")
+    fprintf(f, "Cortex Stage 8: Native File I/O is working perfectly!\n")
+    fclose(f)
+    print("File saved successfully.\n")
+}

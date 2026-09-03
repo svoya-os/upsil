@@ -1,0 +1,21 @@
+// UpsiL Standard Library: Networking
+// High-level TCP/UDP Sockets using WinSock2 mappings
+
+class Socket {
+    var fd: int
+    var domain: int
+    var type: int
+}
+
+// Create a TCP Server
+fun create_tcp_server(port: int) -> int {
+    val AF_INET = 2
+    val SOCK_STREAM = 1
+    val IPPROTO_TCP = 6
+    
+    val sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+    // bind and listen implementation
+    listen(sock, 10)
+    
+    return sock
+}

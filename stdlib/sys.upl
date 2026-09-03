@@ -1,0 +1,16 @@
+// UpsiL Standard Library: System
+// Low-level OS abstractions and multithreading
+
+class Thread {
+    var id: int
+    var status: int
+}
+
+fun spawn(func_ptr: int) -> int {
+    // LLVM backend will map this to pthreads or Windows threads
+    return 0
+}
+
+fun exit(code: int) -> int {
+    return abort()
+}

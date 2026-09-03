@@ -1,0 +1,1600 @@
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }
+
+// UpsiL StdLib: AI Optimizers
+class Adam {
+    var lr: int
+    var beta1: int
+    var beta2: int
+}
+fun adam_step(opt: int, params: int, grads: int) -> int { return 0 }

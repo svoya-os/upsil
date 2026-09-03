@@ -1,0 +1,10 @@
+{
+    "fileExtensions": {
+        "upl": "_upsil"
+    },
+    "iconDefinitions": {
+        "_upsil": {
+            "iconPath": "./upsil-logo-v3.png"
+        }
+    }
+}

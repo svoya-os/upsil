@@ -1,0 +1,18 @@
+fun simulate_gc() {
+    // 1. Manually allocate 1024 bytes in RAM
+    val ptr = malloc(1024.0)
+    
+    // In a real scenario, ptr is now a pointer to an array
+    // We simulate using it...
+    // val result = ptr + 0.0
+    
+    // 2. Free the allocated memory
+    free(ptr)
+}
+
+// 3. Define a block of code ready for GPU PTX compilation
+gpu_kernel matrix_mul(A: tensor, B: tensor) {
+    // This block is isolated for CUDA compilation!
+    val local_res = A * B
+    return local_res
+}

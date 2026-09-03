@@ -1,0 +1,27 @@
+class User {
+    var id: int
+    var age: int
+}
+
+fun main() {
+    print("Testing Structs (Classes) in LLVM...\n")
+    val u = User(id=1, age=25)
+    print("User ID: ")
+    print(u.id)
+    print("\nUser Age: ")
+    print(u.age)
+    print("\nStruct allocation successful!\n")
+
+    print("\nTesting Network Sockets (WinSock2) in LLVM...\n")
+    // AF_INET = 2, SOCK_STREAM = 1, IPPROTO_TCP = 6
+    val server_sock = socket(2, 1, 6)
+    print("Created OS Socket FD: ")
+    print(server_sock)
+    print("\nCortex Socket allocated natively!\n")
+
+    print("\nTesting Dynamic Arrays in LLVM...\n")
+    val arr = [100, 200, 300]
+    print("Array Index 1: ")
+    print(arr[1])
+    print("\nArray allocation successful!\n")
+}

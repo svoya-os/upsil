@@ -1,0 +1,48 @@
+{
+  "name": "upsil-lang",
+  "displayName": "UpsiL Language Support",
+  "description": "Official support for UpsiL (.upl) - The ultimate AI Systems Language",
+  "version": "1.0.3",
+  "publisher": "upsil-corp",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Themes"
+  ],
+  "icon": "upsil-logo-v3.png",
+  "contributes": {
+    "iconThemes": [
+      {
+        "id": "upsil-icon-theme",
+        "label": "UpsiL File Icons",
+        "path": "./upsil-icon-theme.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "upsil",
+        "aliases": [
+          "UpsiL",
+          "upsil"
+        ],
+        "extensions": [
+          ".upl"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./upsil-logo.png",
+          "dark": "./upsil-logo.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "upsil",
+        "scopeName": "source.upsil",
+        "path": "./syntaxes/upsil.tmLanguage.json"
+      }
+    ]
+  }
+}

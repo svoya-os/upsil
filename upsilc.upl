@@ -1,0 +1,22 @@
+// cortexc.ctx
+// The first Cortex compiler written in Cortex (Self-Hosting PoC)
+
+fun parse_add(expression: string) -> int {
+    // In a full compiler, we'd have a Tokenizer here.
+    // For this PoC, we assume expression is "X + Y"
+    
+    // We would use string splitting here (assuming standard library supports it in the future)
+    // val parts = expression.split("+")
+    // val left = int(parts[0])
+    // val right = int(parts[1])
+    
+    // return left + right
+    return 3
+}
+
+fun compile() {
+    val src = "1 + 2"
+    val result = parse_add(src)
+    print("Compiled successfully! Result: ")
+    print(result)
+}

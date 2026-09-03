@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="50%" stop-color="#4facfe" />
+      <stop offset="100%" stop-color="#8a2be2" />
+    </linearGradient>
+  </defs>
+  
+  <!-- UpsiL Letter U in the background (subtle logic circuit style) -->
+  <path d="M16 12 L16 36 Q16 48 32 48 Q48 48 48 36 L48 12" stroke="url(#gradient)" opacity="0.3" stroke-width="8" />
+
+  <!-- Brain Outline -->
+  <path d="M32 54 C12 54 6 42 6 30 C6 16 18 8 32 10 C46 8 58 16 58 30 C58 42 52 54 32 54 Z" stroke="url(#gradient)" />
+  
+  <!-- Central Sulcus (Middle line) -->
+  <path d="M32 10 V54" stroke="url(#gradient)" />
+
+  <!-- Brain Folds (Gyri) -->
+  <path d="M14 30 Q 22 22 30 30" stroke="url(#gradient)" />
+  <path d="M50 30 Q 42 22 34 30" stroke="url(#gradient)" />
+  
+  <path d="M20 42 Q 26 36 32 46" stroke="url(#gradient)" />
+  <path d="M44 42 Q 38 36 32 46" stroke="url(#gradient)" />
+  
+  <path d="M12 20 Q 20 16 26 24" stroke="url(#gradient)" />
+  <path d="M52 20 Q 44 16 38 24" stroke="url(#gradient)" />
+</svg>

@@ -1,0 +1,4 @@
+gpu_kernel add_tensors(a: tensor, b: tensor) {
+    val result = a + b
+    return result
+}

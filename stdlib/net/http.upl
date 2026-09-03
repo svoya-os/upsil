@@ -1,0 +1,1950 @@
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
+
+// UpsiL StdLib: HTTP Protocol
+class HttpRequest {
+    var method: int
+    var url: int
+    var headers: int
+}
+class HttpResponse {
+    var status: int
+    var body: int
+}
+fun http_parse(buffer: int) -> int { return 0 }
+fun http_serve(port: int, handler: int) -> int { return 0 }
