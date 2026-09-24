@@ -6,3 +6,16 @@ dist/
 .venv/
 venv/
 .upsil-out/
+
+# --- common ignores ---
+.env
+.env.*
+!.env.example
+node_modules/
+*.pyc
+.pytest_cache/
+.next/
+*.exe
+*.7z
+Thumbs.db
+desktop.ini
