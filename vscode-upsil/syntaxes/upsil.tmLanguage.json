@@ -60,6 +60,16 @@
     "strings": {
       "patterns": [
         {
+          "name": "string.quoted.raw.triple.upsil",
+          "begin": "r\"\"\"",
+          "end": "\"\"\""
+        },
+        {
+          "name": "string.quoted.raw.upsil",
+          "begin": "r\"",
+          "end": "\"|$"
+        },
+        {
           "name": "string.quoted.triple.upsil",
           "begin": "\"\"\"",
           "end": "\"\"\"",
@@ -181,7 +191,7 @@
       "patterns": [
         {
           "name": "keyword.control.upsil",
-          "match": "\\b(if|else|while|for|return|break|continue)\\b"
+          "match": "\\b(if|else|while|for|return|break|continue|try|catch|finally|throw|with|assert)\\b"
         },
         {
           "name": "storage.type.upsil",
@@ -258,7 +268,7 @@
     },
     "builtins": {
       "name": "support.function.builtin.upsil",
-      "match": "\\b(print|input|str|int|float|bool|len|range|list|dict|set|tuple|min|max|sum|abs|round|sorted|reversed|enumerate|zip|map|filter|any|all|chr|ord|format|isinstance|divmod|pow|iter|next|hash|div|error)\\b(?=\\s*\\()"
+      "match": "\\b(print|input|str|int|float|bool|len|range|list|dict|set|tuple|min|max|sum|abs|round|sorted|reversed|enumerate|zip|map|filter|any|all|chr|ord|format|isinstance|divmod|pow|iter|next|hash|div|error|Error|ValueError|TypeError|KeyError|IndexError|ZeroDivisionError|FileNotFoundError|TimeoutError|RuntimeError|AssertionError)\\b(?=\\s*\\()"
     },
     "calls": {
       "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",

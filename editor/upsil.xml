@@ -14,6 +14,12 @@
       <item>return</item>
       <item>break</item>
       <item>continue</item>
+      <item>try</item>
+      <item>catch</item>
+      <item>finally</item>
+      <item>throw</item>
+      <item>with</item>
+      <item>assert</item>
     </list>
     <list name="declarations">
       <item>fun</item>
@@ -75,12 +81,24 @@
       <item>hash</item>
       <item>div</item>
       <item>error</item>
+      <item>Error</item>
+      <item>ValueError</item>
+      <item>TypeError</item>
+      <item>KeyError</item>
+      <item>IndexError</item>
+      <item>ZeroDivisionError</item>
+      <item>FileNotFoundError</item>
+      <item>TimeoutError</item>
+      <item>RuntimeError</item>
+      <item>AssertionError</item>
     </list>
     <contexts>
       <context name="Normal" attribute="Normal Text" lineEndContext="#stay">
         <DetectSpaces/>
         <Detect2Chars attribute="Comment" context="LineComment" char="/" char1="/"/>
         <Detect2Chars attribute="Comment" context="BlockComment" char="/" char1="*" beginRegion="Comment"/>
+        <StringDetect attribute="String" context="RawTripleString" String="r&quot;&quot;&quot;"/>
+        <Detect2Chars attribute="String" context="RawString" char="r" char1="&quot;"/>
         <StringDetect attribute="String" context="TripleString" String="&quot;&quot;&quot;"/>
         <DetectChar attribute="String" context="String" char="&quot;"/>
         <RegExpr attribute="Declaration" context="#stay" String="\b(model|graph|llm|vector_store)(?=\s+[A-Za-z_])"/>
@@ -113,6 +131,12 @@
       <context name="TripleString" attribute="String" lineEndContext="#stay">
         <RegExpr attribute="Escape" context="#stay" String="\\([ntr0&quot;'\\{}]|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]{1,6}\})"/>
         <DetectChar attribute="Interpolation" context="Interpolation" char="{"/>
+        <StringDetect attribute="String" context="#pop" String="&quot;&quot;&quot;"/>
+      </context>
+      <context name="RawString" attribute="String" lineEndContext="#pop">
+        <DetectChar attribute="String" context="#pop" char="&quot;"/>
+      </context>
+      <context name="RawTripleString" attribute="String" lineEndContext="#stay">
         <StringDetect attribute="String" context="#pop" String="&quot;&quot;&quot;"/>
       </context>
       <context name="Interpolation" attribute="Normal Text" lineEndContext="#stay">

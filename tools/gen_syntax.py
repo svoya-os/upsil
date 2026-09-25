@@ -67,6 +67,8 @@ def textmate() -> str:
                 {"name": "comment.line.double-slash.upsil", "match": "//.*$"},
             ]},
             "strings": {"patterns": [
+                {"name": "string.quoted.raw.triple.upsil", "begin": 'r"""', "end": '"""'},
+                {"name": "string.quoted.raw.upsil", "begin": 'r"', "end": '"|$'},
                 {"name": "string.quoted.triple.upsil", "begin": '"""', "end": '"""',
                  "patterns": [{"include": "#escapes"}, {"include": "#interpolation"}]},
                 {"name": "string.quoted.double.upsil", "begin": '"', "end": '"|$',
@@ -181,6 +183,16 @@ def gtksourceview() -> str:
       </include>
     </context>
 
+    <context id="raw-triple-string" style-ref="string" class="string" class-disabled="no-spell-check">
+      <start>r{TQ}</start>
+      <end>{TQ}</end>
+    </context>
+
+    <context id="raw-string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
+      <start>r"</start>
+      <end>"</end>
+    </context>
+
     <context id="triple-string" style-ref="string" class="string" class-disabled="no-spell-check">
       <start>{TQ}</start>
       <end>{TQ}</end>
@@ -258,6 +270,8 @@ def gtksourceview() -> str:
 
     <context id="expression">
       <include>
+        <context ref="raw-triple-string"/>
+        <context ref="raw-string"/>
         <context ref="triple-string"/>
         <context ref="string"/>
         <context ref="number"/>
@@ -325,6 +339,8 @@ def ksyntax() -> str:
         <DetectSpaces/>
         <Detect2Chars attribute="Comment" context="LineComment" char="/" char1="/"/>
         <Detect2Chars attribute="Comment" context="BlockComment" char="/" char1="*" beginRegion="Comment"/>
+        <StringDetect attribute="String" context="RawTripleString" String="r&quot;&quot;&quot;"/>
+        <Detect2Chars attribute="String" context="RawString" char="r" char1="&quot;"/>
         <StringDetect attribute="String" context="TripleString" String="&quot;&quot;&quot;"/>
         <DetectChar attribute="String" context="String" char="&quot;"/>
         <RegExpr attribute="Declaration" context="#stay" String="\\b({words(CONTEXTUAL_DECL)})(?=\\s+[A-Za-z_])"/>
@@ -357,6 +373,12 @@ def ksyntax() -> str:
       <context name="TripleString" attribute="String" lineEndContext="#stay">
         <RegExpr attribute="Escape" context="#stay" String="{escape_rule}"/>
         <DetectChar attribute="Interpolation" context="Interpolation" char="{{"/>
+        <StringDetect attribute="String" context="#pop" String="&quot;&quot;&quot;"/>
+      </context>
+      <context name="RawString" attribute="String" lineEndContext="#pop">
+        <DetectChar attribute="String" context="#pop" char="&quot;"/>
+      </context>
+      <context name="RawTripleString" attribute="String" lineEndContext="#stay">
         <StringDetect attribute="String" context="#pop" String="&quot;&quot;&quot;"/>
       </context>
       <context name="Interpolation" attribute="Normal Text" lineEndContext="#stay">

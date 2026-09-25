@@ -183,6 +183,9 @@ class Lexer:
             if ch == '"':
                 add(self._string())
                 continue
+            if ch == "r" and self.peek(1) == '"':
+                add(self._raw_string())
+                continue
             if ch == "_" or ch.isalpha():
                 add(self._name())
                 continue
@@ -342,6 +345,32 @@ class Lexer:
         self.fail(span, f"unknown escape '\\{shown}' (to write a backslash use \\\\)",
                   f"неизвестная escape-последовательность '\\{shown}' (обратная косая черта пишется как \\\\)")
         raise AssertionError("unreachable")
+
+    def _raw_string(self) -> Token:
+        """A raw string, r"..." or r followed by triple quotes: the text as written, without escapes or { } (regexes, paths)."""
+        sl, sc, sp = self.line, self.col, self.pos
+        self.advance()  # r
+        triple = self.src.startswith('"""', self.pos)
+        string_span = Span(sl, sc, sl, sc + (4 if triple else 2))
+        self.advance(3 if triple else 1)
+        start = self.pos
+        while True:
+            ch = self.peek()
+            if ch == "":
+                self.fail(string_span, "unterminated string", "незакрытая строка", incomplete=triple)
+            if triple and self.src.startswith('"""', self.pos):
+                text = self.src[start:self.pos]
+                self.advance(3)
+                break
+            if not triple and ch == '"':
+                text = self.src[start:self.pos]
+                self.advance()
+                break
+            if ch == "\n" and not triple:
+                self.fail(string_span, "unterminated string: a line break inside r\"...\" (use r\"\"\"...\"\"\")",
+                          "незакрытая строка: перевод строки внутри r\"...\" (используйте r\"\"\"...\"\"\")")
+            self.advance()
+        return Token("STRING", [text] if text else [], Span(sl, sc, self.line, self.col), self.src[sp:self.pos])
 
     def _string(self) -> Token:
         sl, sc, sp = self.line, self.col, self.pos

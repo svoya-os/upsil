@@ -25,16 +25,17 @@ from typing import List, Optional, Tuple
 from .errors import CompileError, Diagnostic
 from .keywords import PYTHON_ONLY_KEYWORDS
 from .lexer import Token, tokenize
-from .nodes import (Arg, Assign, Attr, AugAssign, BinOp, BoolOp, Break, Call, ClassDecl, Compare,
-                    Const, Continue, DictLit, ExprStmt, For, FunDecl, If, Import, Index, Interp,
-                    ListLit, Module, Name, Node, Not, Num, Param, Prompt, PyImport, Range,
-                    ResourceDecl, Return, Slice, Span, Str, TypeRef, Unary, VarDecl, While)
+from .nodes import (Arg, Assert, Assign, Attr, AugAssign, BinOp, BoolOp, Break, Call, Catch, ClassDecl,
+                    Compare, CompFor, Comprehension, Const, Continue, DestructDecl, DictLit, ExprStmt,
+                    For, FunDecl, If, IfExpr, Import, Index, Interp, Lambda, ListLit, Module, Name, Node,
+                    Not, Num, Param, Prompt, PyImport, Range, ResourceDecl, Return, Slice, Span, Str,
+                    Throw, Try, TupleLit, TypeRef, Unary, UplImport, VarDecl, While, With, WithItem)
 
 _PY_KEYWORDS = frozenset(PYTHON_ONLY_KEYWORDS)
 # UpsiL keywords that are also Python keywords cannot name an argument or attribute
 _KW_NOT_ALLOWED_AS_NAME = frozenset({
     "if", "else", "while", "for", "return", "break", "continue", "class", "import", "as",
-    "and", "or", "not", "in",
+    "and", "or", "not", "in", "try", "finally", "with", "assert",
 })
 
 _COMPARISONS = ("==", "!=", "<", "<=", ">", ">=")
@@ -141,8 +142,18 @@ class Parser:
                 return self.end_simple(Continue(self.advance().span))
             if v == "import":
                 return self.end_simple(self.import_stmt())
+            if v == "try":
+                return self.try_stmt()
+            if v == "throw":
+                return self.end_simple(self.throw_stmt())
+            if v == "with":
+                return self.with_stmt()
+            if v == "assert":
+                return self.end_simple(self.assert_stmt())
             if v == "else":
                 self.fail(t.span, "'else' without 'if'", "'else' без 'if'")
+            if v in ("catch", "finally"):
+                self.fail(t.span, f"'{v}' without 'try'", f"'{v}' без 'try'")
         elif t.kind == "NAME":
             nxt = self.peek(1)
             if t.value in ("llm", "vector_store") and nxt.kind == "NAME":
@@ -181,8 +192,13 @@ class Parser:
             self.skip_separators()
         return body, self.advance()
 
-    def var_decl(self, in_class: bool = False) -> VarDecl:
+    def var_decl(self, in_class: bool = False) -> Node:
         kw = self.advance()
+        if self.at_op("("):
+            if in_class:
+                self.fail(self.peek().span, "a field is declared one at a time: val (a, b) = ... is not allowed here",
+                          "поля объявляются по одному: val (a, b) = ... здесь недопустимо")
+            return self.destruct_decl(kw)
         name = self.expect_name("a variable name", "имя переменной")
         typ = None
         if self.at_op(":"):
@@ -197,6 +213,143 @@ class Parser:
                       f"для val '{name.value}' нужно значение: val {name.value} = ...")
         end = value.span if value is not None else (typ.span if typ is not None else name.span)
         return VarDecl(kw.span.to(end), kw.value == "var", name.value, name.span, typ, value)
+
+    def destruct_decl(self, kw: Token) -> DestructDecl:
+        self.advance()   # (
+        names: List[Token] = []
+        while True:
+            names.append(self.expect_name("a variable name", "имя переменной"))
+            if self.at_op(","):
+                self.advance()
+                if self.at_op(")"):
+                    break
+                continue
+            break
+        self.expect_op(")")
+        if not self.at_op("="):
+            self.fail(self.peek().span, f"{kw.value} (...) needs a value: {kw.value} (a, b) = pair",
+                      f"для {kw.value} (...) нужно значение: {kw.value} (a, b) = pair")
+        self.advance()
+        value = self.expression()
+        value = self.maybe_tuple(value)
+        return DestructDecl(kw.span.to(value.span), kw.value == "var", [n.value for n in names],
+                            [n.span for n in names], value)
+
+    def maybe_tuple(self, first: Node) -> Node:
+        """``a, b`` (without parentheses) after ``=`` or ``return``: a tuple."""
+        if not self.at_op(","):
+            return first
+        items = [first]
+        while self.at_op(","):
+            self.advance()
+            t = self.peek()
+            if t.kind in ("NEWLINE", "EOF") or (t.kind == "OP" and t.value in (";", "}")):
+                break
+            items.append(self.expression())
+        return TupleLit(items[0].span.to(items[-1].span), items)
+
+    def _next_significant(self) -> int:
+        j = self.i
+        while self.toks[j].kind == "NEWLINE":
+            j += 1
+        return j
+
+    def try_stmt(self) -> Try:
+        kw = self.advance()
+        body, close = self.block()
+        catches: List[Catch] = []
+        final: Optional[List[Node]] = None
+        end = close.span
+        while True:
+            j = self._next_significant()
+            tok = self.toks[j]
+            if tok.kind == "KW" and tok.value == "catch" and final is None:
+                self.i = j
+                clause = self.catch_clause()
+                catches.append(clause)
+                end = clause.span
+                continue
+            if tok.kind == "KW" and tok.value == "finally" and final is None:
+                self.i = j
+                self.advance()
+                final, close2 = self.block()
+                end = close2.span
+                continue
+            break
+        if not catches and final is None:
+            self.fail(kw.span, "'try' needs a 'catch' or a 'finally' after its block",
+                      "после блока 'try' нужен 'catch' или 'finally'")
+        return Try(kw.span.to(end), body, catches, final)
+
+    def catch_clause(self) -> Catch:
+        kw = self.advance()
+        name = name_span = None
+        typ: Optional[Node] = None
+        if self.at_op("("):
+            self.advance()
+            n = self.expect_name("a name for the error: catch (e)", "имя для ошибки: catch (e)")
+            name, name_span = n.value, n.span
+            if self.at_op(":"):
+                self.advance()
+                first = self.expect_name("an error type: catch (e: ValueError)", "тип ошибки: catch (e: ValueError)")
+                typ = Name(first.span, first.value)
+                while self.at_op("."):
+                    self.advance()
+                    part = self.expect_name("an error type", "тип ошибки")
+                    typ = Attr(typ.span.to(part.span), typ, part.value, part.span)
+            self.expect_op(")")
+        body, close = self.block()
+        return Catch(kw.span.to(close.span), name, name_span, typ, body)
+
+    def throw_stmt(self) -> Throw:
+        kw = self.advance()
+        t = self.peek()
+        if t.kind in ("NEWLINE", "EOF") or (t.kind == "OP" and t.value in (";", "}")):
+            return Throw(kw.span, None)
+        value = self.expression()
+        return Throw(kw.span.to(value.span), value)
+
+    def with_stmt(self) -> With:
+        kw = self.advance()
+        parens = False
+        if self.at_op("("):
+            close = self._matching_paren(self.i)
+            j = close + 1
+            while j < len(self.toks) and self.toks[j].kind == "NEWLINE":
+                j += 1
+            after = self.toks[j] if j < len(self.toks) else self.toks[-1]
+            if after.kind == "OP" and after.value == "{":
+                self.advance()
+                parens = True
+        items: List[WithItem] = []
+        while True:
+            expr = self.expression()
+            name = name_span = None
+            end = expr.span
+            if self.at_kw("as"):
+                self.advance()
+                n = self.expect_name("a name after 'as'", "имя после 'as'")
+                name, name_span, end = n.value, n.span, n.span
+            items.append(WithItem(expr.span.to(end), expr, name, name_span))
+            if self.at_op(","):
+                self.advance()
+                continue
+            break
+        if parens:
+            self.expect_op(")")
+        body, close_tok = self.block()
+        return With(kw.span.to(close_tok.span), items, body)
+
+    def assert_stmt(self) -> Assert:
+        kw = self.advance()
+        cond = self.expression()
+        message = None
+        end = cond.span
+        if self.at_op(","):
+            self.advance()
+            message = self.expression()
+            end = message.span
+        return Assert(kw.span.to(end), cond, message)
 
     def type_ref(self) -> TypeRef:
         first = self.expect_name("a type", "тип")
@@ -299,6 +452,13 @@ class Parser:
     def if_stmt(self) -> If:
         kw = self.advance()
         cond = self.expression()
+        nxt = self.toks[self._next_significant()]
+        if not (nxt.kind == "OP" and nxt.value == "{") and nxt.kind != "EOF":
+            u_en, u_ru = nxt.unexpected()
+            self.fail(nxt.span, f"{u_en} — expected '{{': the body of an if statement goes in {{ }}, "
+                                f"if (c) {{ a() }} else {{ b() }}; a value by condition is if (c) a else b",
+                      f"{u_ru} — ожидалось '{{': тело инструкции if пишется в {{ }}, "
+                      f"if (c) {{ a() }} else {{ b() }}; значение по условию — if (c) a else b")
         body, close = self.block()
         orelse: List[Node] = []
         end = close.span
@@ -380,12 +540,31 @@ class Parser:
         t = self.peek()
         if t.kind in ("NEWLINE", "EOF") or (t.kind == "OP" and t.value in (";", "}")):
             return Return(kw.span, None)
-        value = self.expression()
+        value = self.maybe_tuple(self.expression())
         return Return(kw.span.to(value.span), value)
 
     def import_stmt(self) -> Node:
         kw = self.advance()
         t = self.peek()
+        if t.kind == "STRING":
+            s = self.advance()
+            if any(not isinstance(p, str) for p in s.value):
+                self.fail(s.span, "a file name cannot contain { }", "в имени файла не может быть { }")
+            path = "".join(s.value)
+            if not path.endswith(".upl"):
+                self.fail(s.span, f"import \"...\" takes an UpsiL file (.upl); for Python write import py \"{path}\"",
+                          f"import \"...\" подключает файл UpsiL (.upl); модуль Python — import py \"{path}\"")
+            alias = None
+            end = s.span
+            if self.at_kw("as"):
+                self.advance()
+                a = self.expect_name("a name after 'as'", "имя после 'as'")
+                alias, end = a.value, a.span
+            stem = path.replace("\\", "/").rsplit("/", 1)[-1][:-4]
+            if alias is None and not stem.isidentifier():
+                self.fail(s.span, f"'{stem}' is not a valid name: import \"{path}\" as name",
+                          f"'{stem}' не годится как имя: import \"{path}\" as имя")
+            return UplImport(kw.span.to(end), path, alias, alias or stem)
         if t.kind == "NAME" and t.value == "py" and self.peek(1).kind == "STRING":
             self.advance()
             s = self.advance()
@@ -416,10 +595,15 @@ class Parser:
 
     def simple_statement(self) -> Node:
         expr = self.expression()
+        if self.at_op(","):
+            # a, b = b, a
+            expr = self.maybe_tuple(expr)
+            if not self.at_op("="):
+                self.unexpected(self.peek(), "'=' after a, b", "'=' после a, b")
         if self.at_op("="):
             self.advance()
             self._check_target(expr)
-            value = self.expression()
+            value = self.maybe_tuple(self.expression())
             return Assign(expr.span.to(value.span), expr, value)
         if self.at_op(*_AUG_OPS):
             op = self.advance().value[0]
@@ -429,6 +613,11 @@ class Parser:
         return ExprStmt(expr.span, expr)
 
     def _check_target(self, expr: Node) -> None:
+        if isinstance(expr, TupleLit):
+            for item in expr.items:
+                if not isinstance(item, (Name, Attr, Index)):
+                    self.fail(item.span, "cannot assign to this expression", "этому выражению нельзя присвоить значение")
+            return
         if not isinstance(expr, (Name, Attr, Index)):
             self.fail(expr.span, "cannot assign to this expression", "этому выражению нельзя присвоить значение")
 
@@ -491,6 +680,8 @@ class Parser:
 
     def prefix(self, min_bp: int = 0) -> Node:
         t = self.peek()
+        if t.kind == "KW" and t.value == "if":
+            return self.if_expr()
         if t.kind == "OP" and t.value in ("-", "+"):
             self.advance()
             operand = self.expression(8)
@@ -503,6 +694,83 @@ class Parser:
             operand = self.expression(3)
             return Not(t.span.to(operand.span), operand)
         return self.postfix(self.primary())
+
+    def if_expr(self) -> IfExpr:
+        kw = self.advance()
+        if not self.at_op("("):
+            self.fail(self.peek().span, "the condition of an if-expression goes in parentheses: if (x > 0) a else b",
+                      "условие if-выражения пишется в скобках: if (x > 0) a else b")
+        self.advance()
+        cond = self.expression()
+        self.expect_op(")")
+        then = self.expression()
+        j = self._next_significant()
+        if not (self.toks[j].kind == "KW" and self.toks[j].value == "else"):
+            self.fail(self.toks[j].span, "an if-expression needs 'else': if (c) a else b",
+                      "в if-выражении нужна ветка 'else': if (c) a else b")
+        self.i = j
+        self.advance()
+        orelse = self.expression()
+        return IfExpr(kw.span.to(orelse.span), cond, then, orelse)
+
+    def lambda_expr(self) -> Lambda:
+        start = self.peek()
+        params: List[Param] = []
+        if start.kind == "NAME":
+            n = self.advance()
+            params.append(Param(n.span, n.value, None, None))
+        else:
+            self.expect_op("(")
+            while not self.at_op(")"):
+                n = self.expect_name("a parameter name", "имя параметра")
+                ptype = None
+                end = n.span
+                if self.at_op(":"):
+                    self.advance()
+                    ptype = self.type_ref()
+                    end = ptype.span
+                params.append(Param(n.span.to(end), n.value, ptype, None))
+                if self.at_op(","):
+                    self.advance()
+                    continue
+                if not self.at_op(")"):
+                    self.unexpected(self.peek(), "',' or ')'", "',' или ')'")
+            self.expect_op(")")
+        self.expect_op("=>")
+        body = self.expression()
+        return Lambda(start.span.to(body.span), params, body)
+
+    def comp_fors(self) -> List[CompFor]:
+        fors: List[CompFor] = []
+        while self.at_kw("for"):
+            kw = self.advance()
+            if self.at_op("("):
+                close = self._matching_paren(self.i)
+                after = self.toks[close + 1] if close + 1 < len(self.toks) else self.toks[-1]
+                if after.kind == "KW" and after.value == "in":
+                    names, spans = self._for_target()
+                    self.expect_kw("in")
+                    iterable = self.expression()
+                    end = iterable.span
+                else:
+                    self.advance()
+                    names, spans = self._for_target()
+                    self.expect_kw("in")
+                    iterable = self.expression()
+                    end = self.expect_op(")").span
+            else:
+                names, spans = self._for_target()
+                self.expect_kw("in")
+                iterable = self.expression()
+                end = iterable.span
+            conds: List[Node] = []
+            while self.at_kw("if"):
+                self.advance()
+                cond = self.expression()
+                conds.append(cond)
+                end = cond.span
+            fors.append(CompFor(kw.span.to(end), names, spans, iterable, conds))
+        return fors
 
     def postfix(self, node: Node) -> Node:
         while True:
@@ -534,6 +802,9 @@ class Parser:
             self.advance()
             return self.string(t)
         if k == "NAME":
+            nxt = self.peek(1)
+            if nxt.kind == "OP" and nxt.value == "=>":
+                return self.lambda_expr()
             self.advance()
             return Name(t.span, t.value)
         if k == "KW":
@@ -548,11 +819,30 @@ class Parser:
                 return Const(t.span, None)
         if k == "OP":
             if t.value == "(":
+                close = self._matching_paren(self.i)
+                after = self.toks[close + 1] if close + 1 < len(self.toks) else self.toks[-1]
+                if after.kind == "OP" and after.value == "=>":
+                    return self.lambda_expr()
                 self.advance()
                 if self.at_op(")"):
                     self.fail(self.peek().span, "empty parentheses — expected an expression",
                               "пустые скобки — ожидалось выражение")
                 expr = self.expression()
+                if self.at_op(","):
+                    items = [expr]
+                    while self.at_op(","):
+                        self.advance()
+                        if self.at_op(")"):
+                            break
+                        items.append(self.expression())
+                    close_tok = self.expect_op(")")
+                    tup = TupleLit(t.span.to(close_tok.span), items)
+                    tup.parens = True
+                    return tup
+                if self.at_kw("for"):
+                    fors = self.comp_fors()
+                    close_tok = self.expect_op(")")
+                    return Comprehension(t.span.to(close_tok.span), "gen", expr, None, fors)
                 self.expect_op(")")
                 expr.parens = True
                 return expr
@@ -591,7 +881,12 @@ class Parser:
                 if options:
                     self.fail(t.span, "the model comes first: [m, system: \"...\"]",
                               "модель указывается первой: [m, system: \"...\"]")
-                items.append(self.expression())
+                item = self.expression()
+                if not items and self.at_kw("for"):
+                    fors = self.comp_fors()
+                    close = self.expect_op("]")
+                    return Comprehension(opening.span.to(close.span), "list", item, None, fors)
+                items.append(item)
             if self.at_op(","):
                 self.advance()
                 continue
@@ -623,6 +918,12 @@ class Parser:
                 self.advance()
                 as_json = True
                 end = fmt.span
+                schema = None
+                if self.at_op("("):
+                    self.advance()
+                    schema = self.expression()
+                    end = self.expect_op(")").span
+                return Prompt(opening.span.to(end), items[0], text, system, as_json, schema)
             return Prompt(opening.span.to(end), items[0], text, system, as_json)
         if options:
             self.fail(options[0][0].span,
@@ -630,7 +931,7 @@ class Parser:
                       "'имя: значение' допустимо только в промпте: [m, system: \"...\"] => \"...\"")
         return ListLit(opening.span.to(close.span), items)
 
-    def dict_lit(self) -> DictLit:
+    def dict_lit(self) -> Node:
         opening = self.advance()
         items: List[Tuple[Node, Node]] = []
         self.skip_newlines()
@@ -640,6 +941,12 @@ class Parser:
             self.expect_op(":")
             self.skip_newlines()
             value = self.expression()
+            self.skip_newlines()
+            if not items and self.at_kw("for"):
+                fors = self.comp_fors()
+                self.skip_newlines()
+                close = self.expect_op("}")
+                return Comprehension(opening.span.to(close.span), "dict", key, value, fors)
             items.append((key, value))
             self.skip_newlines()
             if self.at_op(","):
@@ -676,6 +983,17 @@ class Parser:
                 if named:
                     self.fail(value.span, "a positional argument cannot follow a named one",
                               "позиционный аргумент не может идти после именованного")
+                if self.at_kw("for"):
+                    if args:
+                        self.fail(self.peek().span, "write a generator as the only argument, or in parentheses: "
+                                                    "f(a, (x for x in xs))",
+                                  "генератор пишется единственным аргументом или в скобках: f(a, (x for x in xs))")
+                    fors = self.comp_fors()
+                    value = Comprehension(value.span.to(fors[-1].span), "gen", value, None, fors)
+                    if not self.at_op(")"):
+                        self.fail(self.peek().span, "write a generator as the only argument, or in parentheses: "
+                                                    "f((x for x in xs), b)",
+                                  "генератор пишется единственным аргументом или в скобках: f((x for x in xs), b)")
                 args.append(Arg(value.span, None, value))
             if self.at_op(","):
                 self.advance()

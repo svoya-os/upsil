@@ -7,7 +7,8 @@ added in exactly one place. A test checks that the generated files are in sync.
 """
 
 # Reserved everywhere.
-CONTROL = ("if", "else", "while", "for", "return", "break", "continue")
+CONTROL = ("if", "else", "while", "for", "return", "break", "continue",
+           "try", "catch", "finally", "throw", "with", "assert")
 DECLARATION = ("fun", "val", "var", "class", "import", "as")
 OPERATOR_WORDS = ("and", "or", "not", "in")
 CONSTANTS = ("true", "false", "null")
@@ -30,21 +31,24 @@ BUILTINS = (
     "sorted", "reversed", "enumerate", "zip", "map", "filter", "any", "all",
     "chr", "ord", "format", "isinstance", "divmod", "pow", "iter", "next",
     "hash", "div", "error",
+    # errors that `catch (e: ...)` can name; Error catches every one of them
+    "Error", "ValueError", "TypeError", "KeyError", "IndexError", "ZeroDivisionError",
+    "FileNotFoundError", "TimeoutError", "RuntimeError", "AssertionError",
 )
 
 # Builtins that UpsiL implements itself (upsil.runtime.prelude); the rest are
 # the Python builtins of the same name.
-PRELUDE_BUILTINS = ("print", "input", "str", "div", "error")
+PRELUDE_BUILTINS = ("print", "input", "str", "div", "error", "Error")
 
 # Runtime modules for `import x`.
-MODULES = ("llm", "rag", "nn", "fs", "http", "json", "ui", "sys", "math", "time", "random")
+MODULES = ("llm", "rag", "nn", "fs", "http", "json", "ui", "sys", "math", "time", "random", "csv", "re")
 
 # Python keywords that are not UpsiL keywords: they cannot be used as names,
 # because the program is compiled to Python.
 PYTHON_ONLY_KEYWORDS = (
-    "False", "None", "True", "assert", "async", "await", "def", "del", "elif",
-    "except", "finally", "from", "global", "is", "lambda", "nonlocal", "pass",
-    "raise", "try", "with", "yield",
+    "False", "None", "True", "async", "await", "def", "del", "elif",
+    "except", "from", "global", "is", "lambda", "nonlocal", "pass",
+    "raise", "yield",
 )
 
 # Operators, longest first (the lexer tries them in this order).

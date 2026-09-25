@@ -42,6 +42,16 @@
       </include>
     </context>
 
+    <context id="raw-triple-string" style-ref="string" class="string" class-disabled="no-spell-check">
+      <start>r"""</start>
+      <end>"""</end>
+    </context>
+
+    <context id="raw-string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
+      <start>r"</start>
+      <end>"</end>
+    </context>
+
     <context id="triple-string" style-ref="string" class="string" class-disabled="no-spell-check">
       <start>"""</start>
       <end>"""</end>
@@ -84,6 +94,12 @@
       <keyword>return</keyword>
       <keyword>break</keyword>
       <keyword>continue</keyword>
+      <keyword>try</keyword>
+      <keyword>catch</keyword>
+      <keyword>finally</keyword>
+      <keyword>throw</keyword>
+      <keyword>with</keyword>
+      <keyword>assert</keyword>
     </context>
 
     <context id="declarations" style-ref="declaration">
@@ -158,6 +174,16 @@
       <keyword>hash</keyword>
       <keyword>div</keyword>
       <keyword>error</keyword>
+      <keyword>Error</keyword>
+      <keyword>ValueError</keyword>
+      <keyword>TypeError</keyword>
+      <keyword>KeyError</keyword>
+      <keyword>IndexError</keyword>
+      <keyword>ZeroDivisionError</keyword>
+      <keyword>FileNotFoundError</keyword>
+      <keyword>TimeoutError</keyword>
+      <keyword>RuntimeError</keyword>
+      <keyword>AssertionError</keyword>
     </context>
 
     <context id="number" style-ref="number">
@@ -170,6 +196,8 @@
 
     <context id="expression">
       <include>
+        <context ref="raw-triple-string"/>
+        <context ref="raw-string"/>
         <context ref="triple-string"/>
         <context ref="string"/>
         <context ref="number"/>

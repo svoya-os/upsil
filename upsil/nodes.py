@@ -190,12 +190,61 @@ class Attr(Node):
 
 @dataclass
 class Prompt(Node):
-    """``[model] => text`` / ``[model, system: s] => text -> json``."""
+    """``[model] => text`` / ``[model, system: s] => text -> json`` / ``... -> json(schema)``."""
     span: Span
     model: Node
     text: Node
     system: Optional[Node] = None
     as_json: bool = False
+    schema: Optional[Node] = None
+
+
+@dataclass
+class TupleLit(Node):
+    """``(a, b)``, ``(a,)``; also the left side of ``(a, b) = (b, a)``."""
+    span: Span
+    items: List[Node]
+
+
+@dataclass
+class IfExpr(Node):
+    """``if (cond) a else b``."""
+    span: Span
+    cond: Node
+    then: Node
+    orelse: Node
+
+
+@dataclass
+class Lambda(Node):
+    """``x => x * 2``, ``(a, b) => a + b``, ``() => 42``."""
+    span: Span
+    params: List["Param"]
+    body: Node
+    # set by the checker
+    scope = None
+
+
+@dataclass
+class CompFor(Node):
+    """One ``for x in xs if cond`` clause of a comprehension."""
+    span: Span
+    names: List[str]
+    name_spans: List[Span]
+    iter: Node
+    conds: List[Node]
+
+
+@dataclass
+class Comprehension(Node):
+    """``[e for x in xs]``, ``{k: v for (k, v) in items}``, ``f(e for x in xs)``."""
+    span: Span
+    kind: str                      # "list" | "dict" | "gen"
+    elt: Node                      # the element, or the key of a dict comprehension
+    value: Optional[Node]          # the value of a dict comprehension
+    fors: List[CompFor]
+    # set by the checker
+    scope = None
 
 
 # --------------------------------------------------------------------------
@@ -283,6 +332,64 @@ class Return(Node):
 
 
 @dataclass
+class Catch(Node):
+    """``catch (e: Type) { ... }``; name and type are optional."""
+    span: Span
+    name: Optional[str]
+    name_span: Optional[Span]
+    type: Optional[Node]
+    body: List[Node]
+
+
+@dataclass
+class Try(Node):
+    span: Span
+    body: List[Node]
+    catches: List[Catch]
+    final: Optional[List[Node]]
+
+
+@dataclass
+class Throw(Node):
+    """``throw value``; a bare ``throw`` inside ``catch`` re-throws the caught error."""
+    span: Span
+    value: Optional[Node]
+
+
+@dataclass
+class WithItem(Node):
+    span: Span
+    expr: Node
+    name: Optional[str]
+    name_span: Optional[Span]
+
+
+@dataclass
+class With(Node):
+    """``with nn.no_grad() { ... }``, ``with open_it() as f { ... }``."""
+    span: Span
+    items: List[WithItem]
+    body: List[Node]
+
+
+@dataclass
+class Assert(Node):
+    span: Span
+    cond: Node
+    message: Optional[Node]
+
+
+@dataclass
+class DestructDecl(Node):
+    """``val (a, b) = pair`` / ``var (x, y) = point``."""
+    span: Span
+    mutable: bool
+    names: List[str]
+    name_spans: List[Span]
+    value: Node
+
+
+@dataclass
 class Param(Node):
     span: Span
     name: str
@@ -322,6 +429,15 @@ class Import(Node):
     span: Span
     path: List[str]
     alias: Optional[str]
+
+
+@dataclass
+class UplImport(Node):
+    """``import "helpers.upl" as h`` or ``import helpers`` (helpers.upl next to the program)."""
+    span: Span
+    path: str                      # as written (relative to the importing file)
+    alias: Optional[str]
+    name: str                      # the name it binds
 
 
 @dataclass

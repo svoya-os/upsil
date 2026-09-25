@@ -14,10 +14,13 @@ import importlib as _importlib
 import json as _json
 import sys as _sys
 
-from ..errors import UpsilError
+from ..errors import AssertFailed, UpsilError
 
 range = _builtins.range
 format = _builtins.format
+
+# `catch (e)` and `catch (e: Error)` catch every error of a program (not Ctrl-C or sys.exit)
+Error = Exception
 
 
 class _Missing:
@@ -148,6 +151,66 @@ def error(message: object) -> None:
     raise UpsilError(show(message))
 
 
+def to_error(value: object) -> BaseException:
+    """``throw value``: an error object as is, an error type instantiated, anything else as a message."""
+    if isinstance(value, BaseException):
+        return value
+    if isinstance(value, type) and issubclass(value, BaseException):
+        return value()
+    return UpsilError(show(value))
+
+
+def assertion_failed(message: object, source: _builtins.str) -> BaseException:
+    """``assert cond, message``: the error when ``cond`` is false."""
+    if message is not None:
+        return AssertFailed(show(message))
+    return AssertFailed(f"assertion failed: {source}", f"проверка не прошла: {source}")
+
+
+_UPL_MODULES: dict = {}
+_UPL_LOADING: list = []
+
+
+def import_upl(path: _builtins.str) -> object:
+    """``import "helpers.upl"``: compile and run another UpsiL file once; its names become attributes."""
+    import os
+    import types
+    importer = _sys._getframe(1).f_globals.get("__file__")
+    base = os.path.dirname(os.path.abspath(importer)) if importer and not importer.startswith("<") else os.getcwd()
+    full = os.path.normpath(os.path.join(base, path))
+    cached = _UPL_MODULES.get(full)
+    if cached is not None:
+        return cached
+    shown = os.path.relpath(full)
+    if shown.startswith(".."):
+        shown = full
+    if full in _UPL_LOADING:
+        chain = " -> ".join(os.path.basename(p) for p in _UPL_LOADING + [full])
+        raise UpsilError(f"circular import: {chain}", f"циклический импорт: {chain}")
+    try:
+        with open(full, encoding="utf-8") as f:
+            source = f.read()
+    except OSError as exc:
+        raise UpsilError(f"cannot read {shown}: {exc.strerror or exc}",
+                         f"не удалось прочитать {shown}: {exc.strerror or exc}") from None
+    from ..compiler import compile_source
+    from ..errors import CompileError
+    try:
+        program = compile_source(source, shown)
+    except CompileError as exc:
+        raise UpsilError(f"errors in {shown}:\n{exc.format()}", f"ошибки в {shown}:\n{exc.format()}") from None
+    stem = os.path.splitext(os.path.basename(full))[0]
+    module = types.ModuleType(stem)
+    module.__file__ = shown
+    _UPL_LOADING.append(full)
+    try:
+        exec(program.code, module.__dict__)
+    finally:
+        _UPL_LOADING.pop()
+    _UPL_MODULES[full] = module
+    return module
+
+
 def py_import(module: _builtins.str) -> object:
     _importlib.import_module(module)
     return _importlib.import_module(module.split(".")[0])
@@ -160,14 +223,18 @@ def repl_show(value: object) -> None:
 
 # ---------------------------------------------------------------------- AI
 
-def prompt(model: object, text: object, *, system: object = None, json: bool = False) -> object:
-    """``[model] => text`` and ``[model, system: s] => text -> json``."""
+def prompt(model: object, text: object, *, system: object = None, json: bool = False,
+           schema: object = None) -> object:
+    """``[model] => text``, ``[model, system: s] => text -> json`` and ``... -> json(schema)``."""
     ask = getattr(model, "ask", None)
     if ask is None or not callable(ask):
         name = type_name(model)
         raise UpsilError(f"[m] => ...: m must be an llm model (llm.Model(...)), not {name}",
                          f"[m] => ...: m должна быть моделью (llm.Model(...)), а не {name}")
-    return ask(show(text), system=None if system is None else show(system), json=json)
+    system_text = None if system is None else show(system)
+    if schema is not None:
+        return ask(show(text), system=system_text, json=True, schema=schema)
+    return ask(show(text), system=system_text, json=json)
 
 
 def llm_resource(name: _builtins.str, value: object = MISSING) -> object:

@@ -24,6 +24,7 @@ a global of the same name), so such locals get a fresh Python name (``x_2``).
 from __future__ import annotations
 
 import difflib
+import os
 import re
 from collections import defaultdict
 from typing import Dict, List, Optional, Set, Tuple
@@ -31,10 +32,11 @@ from typing import Dict, List, Optional, Set, Tuple
 from .errors import CompileError, Diagnostic
 from .i18n import count_args
 from .keywords import BUILTINS, MODULES, PYTHON_ONLY_KEYWORDS, SPECIAL_NAMES
-from .nodes import (Arg, Assign, Attr, AugAssign, BinOp, BoolOp, Break, Call, ClassDecl, Compare,
-                    Const, Continue, DictLit, ExprStmt, For, FunDecl, If, Import, Index, Interp,
-                    ListLit, Module, Name, Node, Not, Num, Param, Prompt, PyImport, Range,
-                    ResourceDecl, Return, Slice, Span, Str, TypeRef, Unary, VarDecl, While)
+from .nodes import (Arg, Assert, Assign, Attr, AugAssign, BinOp, BoolOp, Break, Call, Catch, ClassDecl,
+                    Compare, CompFor, Comprehension, Const, Continue, DestructDecl, DictLit, ExprStmt,
+                    For, FunDecl, If, IfExpr, Import, Index, Interp, Lambda, ListLit, Module, Name, Node,
+                    Not, Num, Param, Prompt, PyImport, Range, ResourceDecl, Return, Slice, Span, Str,
+                    Throw, Try, TupleLit, TypeRef, Unary, UplImport, VarDecl, While, With, WithItem)
 
 _PY_KEYWORDS = frozenset(PYTHON_ONLY_KEYWORDS)
 _PY_MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
@@ -52,6 +54,8 @@ _KIND_WORDS = {
     "vector_store": ("vector_store resource", "ресурс vector_store"),
     "builtin": ("built-in function", "встроенная функция"),
     "self": ("self", "self"),
+    "catch": ("caught error", "пойманная ошибка"),
+    "with": ("'with ... as' name", "имя из 'with ... as'"),
 }
 
 _LITERAL_KINDS_EN = {"int": "an integer", "float": "a float", "str": "a string", "bool": "a boolean",
@@ -138,6 +142,7 @@ class Checker:
         self.session = session or Session()
         self.diags: List[Diagnostic] = []
         self.loop_depth = 0
+        self.catch_depth = 0
         self.fun_stack: List[FunDecl] = []
         self.class_stack: List[Block] = []
         self.field_init_block: Optional[Block] = None
@@ -228,6 +233,18 @@ class Checker:
             elif isinstance(s, PyImport):
                 name = s.alias or s.module.split(".")[0]
                 s.sym = self.declare(block, self.new_symbol(name, "import", s.span))
+            elif isinstance(s, UplImport):
+                s.sym = self.declare(block, self.new_symbol(s.name, "import", s.span))
+            elif isinstance(s, DestructDecl):
+                s.syms = []
+                seen: Set[str] = set()
+                for name, span in zip(s.names, s.name_spans):
+                    if name in seen:
+                        self.error(span, f"'{name}' is repeated", f"'{name}' повторяется")
+                        continue
+                    seen.add(name)
+                    s.syms.append(self.declare(block, self.new_symbol(name, "var" if s.mutable else "val", span,
+                                                                      mutable=s.mutable)))
 
     # ------------------------------------------------------------------ lookup
     def lookup(self, name: str, block: Block, span: Span, *, report: bool = True) -> Optional[Symbol]:
@@ -316,6 +333,10 @@ class Checker:
             if s.value is not None:
                 self.expr(s.value, block)
             block.seen.add(s.name)
+        elif isinstance(s, DestructDecl):
+            self.expr(s.value, block)
+            for name in s.names:
+                block.seen.add(name)
         elif isinstance(s, Assign):
             self.expr(s.value, block)
             self.assign_target(s.target, block)
@@ -336,6 +357,47 @@ class Checker:
             self.loop_depth -= 1
         elif isinstance(s, For):
             self.for_stmt(s, block)
+        elif isinstance(s, Try):
+            self.block_stmts(s.body, Block(block, block.py))
+            for c in s.catches:
+                if c.type is not None:
+                    self.expr(c.type, block)
+                cblock = Block(block, block.py)
+                if c.name is not None:
+                    c.sym = self.declare(cblock, self.new_symbol(c.name, "catch", c.name_span))
+                    cblock.seen.add(c.name)
+                self.catch_depth += 1
+                self.block_stmts(c.body, cblock)
+                self.catch_depth -= 1
+            if s.final is not None:
+                self.block_stmts(s.final, Block(block, block.py))
+        elif isinstance(s, Throw):
+            if s.value is not None:
+                self.expr(s.value, block)
+            elif self.catch_depth == 0:
+                self.error(s.span, "a bare 'throw' re-throws the caught error, so it belongs inside catch { }; "
+                                   "otherwise write throw \"what went wrong\"",
+                           "'throw' без значения повторно бросает пойманную ошибку и допустим только внутри "
+                           "catch { }; иначе пишите throw \"что случилось\"")
+        elif isinstance(s, With):
+            body = Block(block, block.py)
+            names: Set[str] = set()
+            for item in s.items:
+                self.expr(item.expr, block)
+            for item in s.items:
+                if item.name is None:
+                    continue
+                if item.name in names:
+                    self.error(item.name_span, f"'{item.name}' is repeated", f"'{item.name}' повторяется")
+                    continue
+                names.add(item.name)
+                item.sym = self.declare(body, self.new_symbol(item.name, "with", item.name_span))
+                body.seen.add(item.name)
+            self.block_stmts(s.body, body)
+        elif isinstance(s, Assert):
+            self.expr(s.cond, block)
+            if s.message is not None:
+                self.expr(s.message, block)
         elif isinstance(s, (Break, Continue)):
             if self.loop_depth == 0:
                 word = "break" if isinstance(s, Break) else "continue"
@@ -357,7 +419,7 @@ class Checker:
                            "классы и модели можно объявлять только на верхнем уровне файла")
             block.seen.add(s.name)
             self.class_decl(s, block)
-        elif isinstance(s, (Import, PyImport)):
+        elif isinstance(s, (Import, PyImport, UplImport)):
             if block is not self.session.module_block:
                 self.error(s.span, "import is only allowed at the top level of a file",
                            "import допускается только на верхнем уровне файла")
@@ -384,9 +446,24 @@ class Checker:
         self.block_stmts(s.body, body)
         self.loop_depth -= 1
 
+    def base_dir(self) -> str:
+        """The folder imports are relative to: the program's folder (the current one for stdin and the REPL)."""
+        if self.filename.startswith("<"):
+            return os.getcwd()
+        return os.path.dirname(os.path.abspath(self.filename))
+
     def check_import(self, s: Node) -> None:
+        if isinstance(s, UplImport):
+            full = os.path.normpath(os.path.join(self.base_dir(), s.path))
+            if not os.path.isfile(full):
+                self.error(s.span, f"file not found: {s.path} (looked in {os.path.dirname(full)})",
+                           f"файл не найден: {s.path} (искали в {os.path.dirname(full)})")
+            return
         if isinstance(s, Import):
             root = s.path[0]
+            if root not in MODULES and len(s.path) == 1 and os.path.isfile(os.path.join(self.base_dir(), root + ".upl")):
+                s.upl_path = root + ".upl"     # import helpers  ->  helpers.upl next to the program
+                return
             if root not in MODULES:
                 dotted = ".".join(s.path)
                 self.error(s.span,
@@ -403,6 +480,10 @@ class Checker:
                            f"'{s.module}' — недопустимое имя модуля Python")
 
     def assign_target(self, target: Node, block: Block) -> None:
+        if isinstance(target, TupleLit):
+            for item in target.items:
+                self.assign_target(item, block)
+            return
         if isinstance(target, Name):
             sym = self.lookup(target.name, block, target.span, report=False)
             target.sym = sym
@@ -505,12 +586,12 @@ class Checker:
                 if self.lint_types:
                     self.lint(p.type, p.default, f"parameter '{p.name}'", f"параметра '{p.name}'")
             fblock.seen.add(p.name)
-        saved_loop = self.loop_depth
-        self.loop_depth = 0
+        saved_loop, saved_catch = self.loop_depth, self.catch_depth
+        self.loop_depth = self.catch_depth = 0
         self.fun_stack.append(fn)
         self.block_stmts(fn.body, fblock)
         self.fun_stack.pop()
-        self.loop_depth = saved_loop
+        self.loop_depth, self.catch_depth = saved_loop, saved_catch
 
     def class_decl(self, cls: ClassDecl, block: Block) -> None:
         if cls.is_model:
@@ -601,8 +682,58 @@ class Checker:
             if node.system is not None:
                 self.expr(node.system, block)
             self.expr(node.text, block)
+            if node.schema is not None:
+                self.expr(node.schema, block)
+        elif t is TupleLit:
+            for item in node.items:
+                self.expr(item, block)
+        elif t is IfExpr:
+            self.expr(node.cond, block)
+            self.expr(node.then, block)
+            self.expr(node.orelse, block)
+        elif t is Lambda:
+            self.lambda_expr(node, block)
+        elif t is Comprehension:
+            self.comprehension(node, block)
         else:  # pragma: no cover
             raise AssertionError(f"unknown expression {t.__name__}")
+
+    def lambda_expr(self, node: Lambda, block: Block) -> None:
+        py = self.new_pyscope("function", self.py_parent(block.py))
+        node.scope = py
+        lblock = Block(block, py)
+        names: Set[str] = set()
+        for p in node.params:
+            if p.name in names:
+                self.error(p.span, f"duplicate parameter '{p.name}'", f"параметр '{p.name}' повторяется")
+                continue
+            names.add(p.name)
+            p.sym = self.declare(lblock, self.new_symbol(p.name, "param", p.span))
+            p.sym.fixed = True
+            lblock.seen.add(p.name)
+        self.expr(node.body, lblock)
+
+    def comprehension(self, node: Comprehension, block: Block) -> None:
+        # Python runs a comprehension in its own function scope; the first iterable is
+        # evaluated outside of it.
+        py = self.new_pyscope("function", self.py_parent(block.py))
+        node.scope = py
+        inner = Block(block, py)
+        for i, clause in enumerate(node.fors):
+            self.expr(clause.iter, block if i == 0 else inner)
+            clause.syms = []
+            for name, span in zip(clause.names, clause.name_spans):
+                if name in inner.declared:
+                    self.error(span, f"'{name}' is repeated", f"'{name}' повторяется")
+                    continue
+                sym = self.declare(inner, self.new_symbol(name, "loop", span))
+                inner.seen.add(name)
+                clause.syms.append(sym)
+            for cond in clause.conds:
+                self.expr(cond, inner)
+        self.expr(node.elt, inner)
+        if node.value is not None:
+            self.expr(node.value, inner)
 
     def call(self, node: Call, block: Block) -> None:
         self.expr(node.func, block)

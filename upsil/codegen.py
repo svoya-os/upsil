@@ -18,10 +18,11 @@ from typing import List, Optional
 
 from .checker import CheckResult, PyScope, Symbol
 from .keywords import PRELUDE_BUILTINS, PYTHON_ONLY_KEYWORDS
-from .nodes import (Assign, Attr, AugAssign, BinOp, BoolOp, Break, Call, ClassDecl, Compare, Const,
-                    Continue, DictLit, ExprStmt, For, FunDecl, If, Import, Index, Interp, ListLit,
-                    Module, Name, Node, Not, Num, Prompt, PyImport, Range, ResourceDecl, Return,
-                    Slice, Span, Str, TypeRef, Unary, VarDecl, While)
+from .nodes import (Assert, Assign, Attr, AugAssign, BinOp, BoolOp, Break, Call, ClassDecl, Compare,
+                    Comprehension, Const, Continue, DestructDecl, DictLit, ExprStmt, For, FunDecl, If,
+                    IfExpr, Import, Index, Interp, Lambda, ListLit, Module, Name, Node, Not, Num, Prompt,
+                    PyImport, Range, ResourceDecl, Return, Slice, Span, Str, Throw, Try, TupleLit,
+                    TypeRef, Unary, UplImport, VarDecl, While, With)
 
 _BINOPS = {"+": ast.Add, "-": ast.Sub, "*": ast.Mult, "/": ast.Div, "%": ast.Mod,
            "@": ast.MatMult, "**": ast.Pow}
@@ -145,6 +146,63 @@ class Codegen:
         target = self.mk(ast.Name, s.name_span, id=s.sym.pyname, ctx=ast.Store())
         return [self.mk(ast.Assign, s.span, targets=[target], value=self.call(self.prelude(helper, s.span), args, s.span))]
 
+    def s_DestructDecl(self, s: DestructDecl) -> list:
+        names = [self.mk(ast.Name, span, id=sym.pyname, ctx=ast.Store()) for sym, span in zip(s.syms, s.name_spans)]
+        target = self.mk(ast.Tuple, s.name_spans[0].to(s.name_spans[-1]), elts=names, ctx=ast.Store())
+        return [self.mk(ast.Assign, s.span, targets=[target], value=self.expr(s.value))]
+
+    def s_Try(self, s: Try) -> list:
+        handlers = []
+        for c in s.catches:
+            typ = self.expr(c.type) if c.type is not None else self.prelude("Error", c.span)
+            name = c.sym.pyname if c.name is not None else None
+            handlers.append(self.mk(ast.ExceptHandler, c.span, type=typ, name=name, body=self.body(c.body, c.span)))
+        final = self.body(s.final, s.span) if s.final is not None else []
+        return [self.mk(ast.Try, s.span, body=self.body(s.body, s.span), handlers=handlers, orelse=[],
+                        finalbody=final)]
+
+    def s_Throw(self, s: Throw) -> list:
+        if s.value is None:
+            return [self.mk(ast.Raise, s.span, exc=None, cause=None)]
+        exc = self.call(self.prelude("to_error", s.value.span), [self.expr(s.value)], s.value.span)
+        return [self.mk(ast.Raise, s.span, exc=exc, cause=None)]
+
+    def s_With(self, s: With) -> list:
+        items = []
+        for item in s.items:
+            var = None
+            if item.name is not None:
+                var = self.mk(ast.Name, item.name_span, id=item.sym.pyname, ctx=ast.Store())
+            items.append(ast.withitem(context_expr=self.expr(item.expr), optional_vars=var))
+        return [self.mk(ast.With, s.span, items=items, body=self.body(s.body, s.span), type_comment=None)]
+
+    def s_Assert(self, s: Assert) -> list:
+        # not Python's assert: `python -O` would drop it
+        text = self.source_text(s.cond.span)
+        message = self.expr(s.message) if s.message is not None else self.mk(ast.Constant, s.span, value=None)
+        exc = self.call(self.prelude("assertion_failed", s.span),
+                        [message, self.mk(ast.Constant, s.cond.span, value=text)], s.span)
+        test = self.mk(ast.UnaryOp, s.cond.span, op=ast.Not(), operand=self.expr(s.cond))
+        return [self.mk(ast.If, s.span, test=test, body=[self.mk(ast.Raise, s.span, exc=exc, cause=None)], orelse=[])]
+
+    def source_text(self, span: Span) -> str:
+        if not 1 <= span.line <= len(self.lines):
+            return ""
+        if span.end_line == span.line:
+            return self.lines[span.line - 1][span.col - 1:span.end_col - 1]
+        parts = [self.lines[span.line - 1][span.col - 1:]]
+        parts += self.lines[span.line:span.end_line - 1]
+        parts.append(self.lines[span.end_line - 1][:span.end_col - 1])
+        return " ".join(p.strip() for p in parts)
+
+    def upl_import(self, path: str, pyname: str, span: Span) -> list:
+        value = self.call(self.prelude("import_upl", span), [self.mk(ast.Constant, span, value=path)], span)
+        target = self.mk(ast.Name, span, id=pyname, ctx=ast.Store())
+        return [self.mk(ast.Assign, span, targets=[target], value=value)]
+
+    def s_UplImport(self, s: UplImport) -> list:
+        return self.upl_import(s.path, s.sym.pyname, s.span)
+
     def s_Assign(self, s: Assign) -> list:
         return [self.mk(ast.Assign, s.span, targets=[self.target(s.target)], value=self.expr(s.value))]
 
@@ -153,6 +211,8 @@ class Codegen:
                         value=self.expr(s.value))]
 
     def target(self, t: Node):
+        if isinstance(t, TupleLit):
+            return self.mk(ast.Tuple, t.span, elts=[self.target(i) for i in t.items], ctx=ast.Store())
         if isinstance(t, Name):
             if t.sym.kind == "member":
                 return self.self_attr(t.sym.name, t.span, ast.Store())
@@ -220,6 +280,9 @@ class Codegen:
     def s_Import(self, s: Import) -> list:
         path = s.path
         pyname = s.sym.pyname
+        upl = getattr(s, "upl_path", None)
+        if upl is not None:
+            return self.upl_import(upl, pyname, s.span)
         if len(path) == 2 and s.alias:
             names = [ast.alias(name=path[1], asname=pyname)]
             return [self.mk(ast.ImportFrom, s.span, module=f"upsil.runtime.{path[0]}", names=names, level=0)]
@@ -476,7 +539,40 @@ class Codegen:
             keywords.append(self.mk(ast.keyword, n.system.span, arg="system", value=self.expr(n.system)))
         if n.as_json:
             keywords.append(self.mk(ast.keyword, n.span, arg="json", value=self.mk(ast.Constant, n.span, value=True)))
+        if n.schema is not None:
+            keywords.append(self.mk(ast.keyword, n.schema.span, arg="schema", value=self.expr(n.schema)))
         return self.call(self.prelude("prompt", n.span), [self.expr(n.model), self.expr(n.text)], n.span, keywords)
+
+    def e_TupleLit(self, n: TupleLit) -> ast.expr:
+        return self.mk(ast.Tuple, n.span, elts=[self.expr(i) for i in n.items], ctx=ast.Load())
+
+    def e_IfExpr(self, n: IfExpr) -> ast.expr:
+        return self.mk(ast.IfExp, n.span, test=self.expr(n.cond), body=self.expr(n.then), orelse=self.expr(n.orelse))
+
+    def e_Lambda(self, n: Lambda) -> ast.expr:
+        args = [self.mk(ast.arg, p.span, arg=p.sym.pyname, annotation=None) for p in n.params]
+        arguments = ast.arguments(posonlyargs=[], args=args, vararg=None, kwonlyargs=[], kw_defaults=[],
+                                  kwarg=None, defaults=[])
+        return self.mk(ast.Lambda, n.span, args=arguments, body=self.expr(n.body))
+
+    def e_Comprehension(self, n: Comprehension) -> ast.expr:
+        generators = []
+        for clause in n.fors:
+            names = [self.mk(ast.Name, span, id=sym.pyname, ctx=ast.Store())
+                     for sym, span in zip(clause.syms, clause.name_spans)]
+            if len(names) == 1:
+                target = names[0]
+            else:
+                target = self.mk(ast.Tuple, clause.name_spans[0].to(clause.name_spans[-1]), elts=names,
+                                 ctx=ast.Store())
+            generators.append(ast.comprehension(target=target, iter=self.expr(clause.iter),
+                                                ifs=[self.expr(c) for c in clause.conds], is_async=0))
+        if n.kind == "list":
+            return self.mk(ast.ListComp, n.span, elt=self.expr(n.elt), generators=generators)
+        if n.kind == "dict":
+            return self.mk(ast.DictComp, n.span, key=self.expr(n.elt), value=self.expr(n.value),
+                           generators=generators)
+        return self.mk(ast.GeneratorExp, n.span, elt=self.expr(n.elt), generators=generators)
 
 
 def _is_null(node: Node) -> bool:

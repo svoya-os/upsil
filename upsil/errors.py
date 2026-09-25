@@ -28,6 +28,10 @@ class UpsilError(Exception):
         return tr(self.en, self.ru)
 
 
+class AssertFailed(UpsilError, AssertionError):
+    """``assert cond, message`` failed; ``catch (e: AssertionError)`` catches it."""
+
+
 class Diagnostic:
     """One compile-time message attached to a source position."""
 
