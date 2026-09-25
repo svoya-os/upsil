@@ -56,6 +56,12 @@ class ErrorsTest(UpsilTestCase):
                 exec(program.code, {"__name__": "__main__"})
             self.assertEqual(str(ctx.exception), "всё пропало")
 
+    def test_a_closure_keeps_the_caught_error(self):
+        # Python deletes `except ... as e` at the end of the handler; UpsiL keeps it
+        self.assertRuns('val later = []\ntry { throw "ошибка" } catch (e) { later.append(() => e) }\n'
+                        'fun f() {\n  try { error("в функции") } catch (e) { return () => "{e}!" }\n}\n'
+                        'print(later[0](), f()())', "ошибка в функции!\n")
+
     def test_ctrl_c_and_exit_are_not_caught(self):
         with self.assertRaises(SystemExit):
             run_upl('import sys\ntry { sys.exit(3) } catch (e) { print("не должно") }')
@@ -159,7 +165,9 @@ class FunctionalTest(UpsilTestCase):
             '''), '+ - 0\nмного ["нечет", "чёт", "нечет"]\n')
         self.assertCompileError("val x = if (true) 1", "an if-expression needs 'else'")
         self.assertCompileError("val x = if true 1 else 2", "the condition of an if-expression goes in parentheses")
-        self.assertCompileError("if (true) print(1) else print(2)", "expected '{'")
+        self.assertRuns("val a = 2\nif (a > 1) print(\"да\") else print(\"нет\")", "да\n")
+        self.assertCompileError("if (true) print(1)", "the body of an if statement goes in { }")
+        self.assertCompileError("if true print(1)", "expected '{'")
 
     def test_tuples_and_destructuring(self):
         self.assertRuns(textwrap.dedent('''\

@@ -155,8 +155,17 @@ class Codegen:
         handlers = []
         for c in s.catches:
             typ = self.expr(c.type) if c.type is not None else self.prelude("Error", c.span)
-            name = c.sym.pyname if c.name is not None else None
-            handlers.append(self.mk(ast.ExceptHandler, c.span, type=typ, name=name, body=self.body(c.body, c.span)))
+            body = self.body(c.body, c.span)
+            name = None
+            if c.name is not None:
+                # Python deletes an `except ... as` name when the handler ends, which would break
+                # a lambda that captured it: catch into a hidden name and copy it to the user's.
+                name = "_upsil_err"
+                copy = self.mk(ast.Assign, c.name_span,
+                               targets=[self.mk(ast.Name, c.name_span, id=c.sym.pyname, ctx=ast.Store())],
+                               value=self.load("_upsil_err", c.name_span))
+                body = [copy] + body
+            handlers.append(self.mk(ast.ExceptHandler, c.span, type=typ, name=name, body=body))
         final = self.body(s.final, s.span) if s.final is not None else []
         return [self.mk(ast.Try, s.span, body=self.body(s.body, s.span), handlers=handlers, orelse=[],
                         finalbody=final)]

@@ -33,6 +33,7 @@ from ..errors import UpsilError
 from ..i18n import tr
 from . import config as _config
 from .llm import LLMError, Model
+from .prelude import Record
 
 __all__ = ["VectorStore", "Result"]
 
@@ -43,14 +44,10 @@ _EMBED_BATCH = 32
 _notice_shown = False
 
 
-class Result(dict):
+class Result(Record):
     """A search hit: ``hit.text``, ``hit.score``, ``hit.meta``, ``hit.id`` (or ``hit["text"]``...)."""
 
-    def __getattr__(self, name: str) -> Any:
-        try:
-            return self[name]
-        except KeyError:
-            raise AttributeError(name) from None
+    __slots__ = ()
 
 
 class VectorStore:

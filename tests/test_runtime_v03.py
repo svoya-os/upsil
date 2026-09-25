@@ -171,6 +171,24 @@ class NNHelpersTest(UpsilTestCase):
         self.assertEqual(out, "true 3.0 1.0\n")
 
 
+class RecordsTest(UpsilTestCase):
+    def test_json_csv_and_answers_are_records(self):
+        self.assertRuns(textwrap.dedent('''\
+            import json
+            val d = json.parse(r"""{"name": "Аня", "tags": [{"k": 1}], "items": 3}""")
+            d.age = 30
+            print(d.name, d.tags[0].k, d["items"], d.age, d == {"name": "Аня", "tags": [{"k": 1}], "items": 3, "age": 30})
+            print(json.stringify(d))
+            '''), 'Аня 1 3 30 true\n{"name": "Аня", "tags": [{"k": 1}], "items": 3, "age": 30}\n')
+        with lang("en"), self.assertRaises(AttributeError) as ctx:
+            run_upl('import json\nprint(json.parse("\\{\\"a\\": 1\\}").b)')
+        self.assertIn("no field 'b' (fields: a)", str(ctx.exception))
+        with MockOpenAI(reply=lambda body: '{"plan": {"steps": [{"tool": "calc"}]}}') as mock:
+            out = run_upl(f'import llm\nllm m = llm.Model(url = "{mock.url}")\n'
+                          'val a = [m] => "x" -> json\nprint(a.plan.steps[0].tool)')
+            self.assertEqual(out, "calc\n")
+
+
 class CsvReTest(UpsilTestCase):
     def test_csv_round_trip(self):
         with tempfile.TemporaryDirectory() as d:

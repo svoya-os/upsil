@@ -1011,6 +1011,8 @@ print(short, terse, data["name"])
   только JSON, а если сервер поддерживает `response_format`, он тоже используется. Ответ
   разбирается (обрамление ```json и лишний текст вокруг допускаются) и возвращается как
   словарь или список; если это не JSON — ошибка выполнения.
+- Объекты JSON в ответе — записи: поле можно читать и как `data["name"]`, и как `data.name`
+  (раздел 12, **json**).
 - `-> json(форма)` описывает, какой JSON нужен, и проверяет ответ (раздел 9.5).
 - Если ответ — не тот JSON, модели объясняют, что не так, и спрашивают ещё раз
   (`json_retries` раз, по умолчанию 1); не помогло — ошибка `llm.FormatError`, которую можно
@@ -1194,7 +1196,7 @@ temperature = null, max_tokens = null)` — ответ на один вопро�
 Пример — [examples/spirals.upl](../examples/spirals.upl).
 
 **csv** — таблицы: `read(path, sep = ",", header = true, numbers = false)` — строки файла:
-словари по первой строке (или списки с `header = false`); `numbers = true` превращает числа
+записи по первой строке (`row.text` или `row["text"]`; списки с `header = false`); `numbers = true` превращает числа
 из текста в числа. `parse(text, ...)` — то же из строки. `write(path, rows, columns = null,
 sep = ",")` пишет список словарей (столбцы — по ключам) или списков и возвращает число строк;
 `stringify(rows, ...)` — то же в строку.
@@ -1227,7 +1229,21 @@ print(re.find_all(r"(WARN|ERROR) (\w+)", log), re.replace(r"\d+C", t => "{int(t[
 сообщением. Прокси из окружения используются, кроме локальных адресов.
 
 **json** — `parse(text)`, `stringify(value, indent = null)`, `read(path)`,
-`write(path, value, indent = 2)`.
+`write(path, value, indent = 2)`. Объекты JSON становятся **записями** — словарями, поля
+которых можно читать через точку: `data.name` — то же, что `data["name"]`, и присваивать:
+`data.age = 30`. Ключ, совпадающий с методом словаря (`items`, `keys`, `get`…), читается
+только в скобках: `data["items"]`. Записи — это и строки `csv.read`, и ответы модели
+`-> json`, и найденное `db.search`.
+
+```upsil
+import json
+val d = json.parse(r"""{"name": "Аня", "tags": [{"k": 1}]}""")
+d.age = 30
+print(d.name, d.tags[0].k, d["age"], d)
+```
+```output
+Аня 1 30 {"name": "Аня", "tags": [{"k": 1}], "age": 30}
+```
 
 **ui** — окно чата на tkinter: `ui.Window(title = "UpsiL", width = 600, height = 700,
 echo = true)`; методы `add_message(text)` (можно вызывать из любого потока),

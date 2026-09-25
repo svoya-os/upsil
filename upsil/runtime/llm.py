@@ -409,7 +409,8 @@ class Model:
                 return text
             try:
                 value = parse_json_reply(text)
-                return conform(value, schema) if schema is not None else value
+                from .prelude import records
+                return records(conform(value, schema) if schema is not None else value)
             except FormatError as exc:
                 if attempt >= self.json_retries:
                     exc.reply = exc.reply or text

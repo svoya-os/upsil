@@ -6,7 +6,8 @@
     val nums = csv.read("scores.csv", numbers = true)   // "5" -> 5, "0.9" -> 0.9
     csv.write("out.csv", [{"text": "ok", "label": "pos"}])
 
-The first row names the columns: each row becomes a dict. ``header = false`` gives lists.
+The first row names the columns: each row becomes a record (``row.text`` or ``row["text"]``).
+``header = false`` gives lists.
 """
 
 from __future__ import annotations
@@ -46,8 +47,9 @@ def parse(text: str, sep: str = ",", header: bool = True, numbers: bool = False)
         return rows
     if not rows:
         return []
+    from .prelude import Record
     names = [str(n).strip() for n in rows[0]]
-    return [dict(zip(names, r + [None] * (len(names) - len(r)))) for r in rows[1:]]
+    return [Record(zip(names, r + [None] * (len(names) - len(r)))) for r in rows[1:]]
 
 
 def read(path: str, sep: str = ",", header: bool = True, numbers: bool = False) -> List[Any]:

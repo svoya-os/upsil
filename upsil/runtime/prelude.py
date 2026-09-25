@@ -92,6 +92,45 @@ def type_name(value: object) -> _builtins.str:
     return type(value).__name__
 
 
+class Record(dict):
+    """A dict whose keys can also be read as fields: ``row.text`` is ``row["text"]``.
+
+    Rows of ``csv.read``, parsed JSON (``json.parse``, ``[m] => ... -> json``) and search hits
+    are records. A key that is also a dict method (``items``, ``keys``, ``get``...) is read with
+    ``row["items"]``."""
+
+    __slots__ = ()
+
+    def __getattr__(self, name: _builtins.str) -> object:
+        try:
+            return self[name]
+        except KeyError:
+            if name.startswith("__"):
+                raise AttributeError(name) from None
+            from ..i18n import tr
+            fields = ", ".join(_builtins.str(k) for k in self.keys()) or tr("none", "нет")
+            raise AttributeError(tr(f"no field '{name}' (fields: {fields})",
+                                    f"нет поля '{name}' (есть: {fields})")) from None
+
+    def __setattr__(self, name: _builtins.str, value: object) -> None:
+        self[name] = value
+
+    def __delattr__(self, name: _builtins.str) -> None:
+        try:
+            del self[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+
+def records(value: object) -> object:
+    """Dicts inside ``value`` (lists and dicts, any depth) become records."""
+    if isinstance(value, dict):
+        return Record((k, records(v)) for k, v in value.items())
+    if isinstance(value, list):
+        return [records(v) for v in value]
+    return value
+
+
 class Object:
     """Base class of UpsiL classes: shows instances as ``Point(x=1, y=2)``."""
 

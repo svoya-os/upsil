@@ -1009,6 +1009,8 @@ print(short, terse, data["name"])
   only, and `response_format` is used when the server supports it. The answer is parsed (a
   ```json fence and chatter around it are tolerated) and returned as a dict or list; if it is
   not JSON, that is a run-time error.
+- JSON objects in the answer are records: a field reads as `data["name"]` or `data.name`
+  (section 12, **json**).
 - `-> json(shape)` says what JSON is needed and checks the answer (section 9.5).
 - When the answer is not the JSON asked for, the model is told what is wrong and asked again
   (`json_retries` times, 1 by default); if that does not help, the error is `llm.FormatError`,
@@ -1188,7 +1190,8 @@ string for a prompt), `save(path)`; `rag.VectorStore.load(path)`; `len(db)`; fie
 An example: [examples/spirals.upl](../examples/spirals.upl).
 
 **csv**: tables. `read(path, sep = ",", header = true, numbers = false)` gives the rows of a
-file as dicts keyed by the first row (lists with `header = false`); `numbers = true` turns
+file as records keyed by the first row (`row.text` or `row["text"]`; lists with
+`header = false`); `numbers = true` turns
 numbers in the text into numbers. `parse(text, ...)` does the same for a string.
 `write(path, rows, columns = null, sep = ",")` writes a list of dicts (columns from the keys) or
 of lists and returns the number of rows; `stringify(rows, ...)` returns the text.
@@ -1221,7 +1224,20 @@ text). Network and HTTP errors stop the program with a clear message. Proxies fr
 environment are used, except for local addresses.
 
 **json**: `parse(text)`, `stringify(value, indent = null)`, `read(path)`,
-`write(path, value, indent = 2)`.
+`write(path, value, indent = 2)`. JSON objects become **records**: dicts whose fields can be
+read with a dot, `data.name` is `data["name"]`, and assigned, `data.age = 30`. A key that is also
+a dict method (`items`, `keys`, `get`...) reads only with brackets: `data["items"]`. Rows of
+`csv.read`, `-> json` answers of a model and the hits of `db.search` are records too.
+
+```upsil
+import json
+val d = json.parse(r"""{"name": "Anna", "tags": [{"k": 1}]}""")
+d.age = 30
+print(d.name, d.tags[0].k, d["age"], d)
+```
+```output
+Anna 1 30 {"name": "Anna", "tags": [{"k": 1}], "age": 30}
+```
 
 **ui**: a tkinter chat window: `ui.Window(title = "UpsiL", width = 600, height = 700,
 echo = true)`; methods `add_message(text)` (callable from any thread), `on_submit(handler)`

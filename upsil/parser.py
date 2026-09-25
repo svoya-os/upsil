@@ -129,6 +129,16 @@ class Parser:
             if v == "class":
                 return self.class_decl(is_model=False)
             if v == "if":
+                if self.peek(1).kind == "OP" and self.peek(1).value == "(":
+                    close = self._matching_paren(self.i + 1)
+                    j = close + 1
+                    while j < len(self.toks) and self.toks[j].kind == "NEWLINE":
+                        j += 1
+                    after = self.toks[j] if j < len(self.toks) else self.toks[-1]
+                    if not (after.kind == "OP" and after.value == "{") and after.kind != "EOF":
+                        # if (c) a else b — an expression used as a statement (a value in the REPL)
+                        expr = self.postfix(self.if_expr(statement=True))
+                        return self.end_simple(ExprStmt(expr.span, expr))
                 return self.if_stmt()
             if v == "while":
                 return self.while_stmt()
@@ -695,7 +705,7 @@ class Parser:
             return Not(t.span.to(operand.span), operand)
         return self.postfix(self.primary())
 
-    def if_expr(self) -> IfExpr:
+    def if_expr(self, statement: bool = False) -> IfExpr:
         kw = self.advance()
         if not self.at_op("("):
             self.fail(self.peek().span, "the condition of an if-expression goes in parentheses: if (x > 0) a else b",
@@ -707,6 +717,11 @@ class Parser:
         then = self.expression()
         j = self._next_significant()
         if not (self.toks[j].kind == "KW" and self.toks[j].value == "else"):
+            if statement:
+                self.fail(then.span, "the body of an if statement goes in { }: if (c) { a() }; "
+                                     "with else and no braces it is a value: if (c) a else b",
+                          "тело инструкции if пишется в { }: if (c) { a() }; без скобок и с else "
+                          "это значение: if (c) a else b")
             self.fail(self.toks[j].span, "an if-expression needs 'else': if (c) a else b",
                       "в if-выражении нужна ветка 'else': if (c) a else b")
         self.i = j

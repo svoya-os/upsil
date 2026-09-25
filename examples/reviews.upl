@@ -14,10 +14,11 @@ llm m = llm.Model(temperature = 0.0)
 val shape = {"label": ["pos", "neg", "neu"], "score": float}
 
 val rows = csv.read(source)
-val answers = m.ask_all(["Оцени тональность отзыва: {r["text"]}" for r in rows],
+val answers = m.ask_all(["Оцени тональность отзыва: {r.text}" for r in rows],
                         schema = shape, errors = "null")
 
-val results = [{"text": r["text"], "label": a["label"], "score": a["score"]}
+// строки таблицы и ответы модели — записи: r.text то же, что r["text"]
+val results = [{"text": r.text, "label": a.label, "score": a.score}
                for (r, a) in zip(rows, answers) if a != null]
 csv.write(target, sorted(results, key = r => r["score"], reverse = true))
 

@@ -17,7 +17,9 @@ __all__ = ["parse", "stringify", "read", "write"]
 
 
 def parse(text: str) -> Any:
-    return _json.loads(text)
+    """JSON text as UpsiL values; objects are records (``data.name`` or ``data["name"]``)."""
+    from .prelude import records
+    return records(_json.loads(text))
 
 
 def stringify(value: Any, indent: Optional[int] = None) -> str:
@@ -25,7 +27,7 @@ def stringify(value: Any, indent: Optional[int] = None) -> str:
 
 
 def read(path: str) -> Any:
-    return _json.loads(_Path(path).expanduser().read_text(encoding="utf-8"))
+    return parse(_Path(path).expanduser().read_text(encoding="utf-8"))
 
 
 def write(path: str, value: Any, indent: Optional[int] = 2) -> None:
