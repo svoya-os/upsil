@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: Apache-2.0
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "upsil"
+version = "0.2.0"
+description = "A small Kotlin-like language for AI scripts (local LLMs, RAG, PyTorch) that compiles to readable Python"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Maksim Segen" }]
+keywords = ["language", "compiler", "llm", "rag", "pytorch", "transpiler"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    # Apache-2.0 is declared by this classifier (plus LICENSE and NOTICE, picked up
+    # automatically) instead of `license = "Apache-2.0"`: the SPDX string needs
+    # setuptools >= 77, and distributions such as Ubuntu 24.04 ship setuptools 68.
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: Russian",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+nn = ["torch"]
+
+[project.scripts]
+upsil = "upsil.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/svoya-os/upsil"
+Documentation = "https://github.com/svoya-os/upsil/blob/main/docs/spec.md"
+Issues = "https://github.com/svoya-os/upsil/issues"
+Changelog = "https://github.com/svoya-os/upsil/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["upsil*"]

@@ -1,0 +1,9 @@
+include LICENSE NOTICE README.md README.en.md CHANGELOG.md
+recursive-include docs *.md
+recursive-include examples *.upl *.md *.txt
+recursive-include tests *.py *.out
+recursive-include editor *.lang *.xml
+include tools/gen_syntax.py
+include vscode-upsil/package.json vscode-upsil/language-configuration.json vscode-upsil/upsil-icon-theme.json
+include vscode-upsil/README.md vscode-upsil/LICENSE vscode-upsil/upsil-logo-v3.png
+include vscode-upsil/syntaxes/upsil.tmLanguage.json
