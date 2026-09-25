@@ -61,6 +61,7 @@ class SysTest(UpsilTestCase):
         with self.assertRaises(SystemExit) as cm:
             usys.exit(3)
         self.assertEqual(cm.exception.code, 3)
+        self.assertEqual(usys.platform, sys.platform)
 
 
 class SmallModulesTest(UpsilTestCase):
@@ -80,6 +81,8 @@ class SmallModulesTest(UpsilTestCase):
         self.assertRuns("import random\nrandom.seed(1)\nval a = random.randint(1, 6)\nrandom.seed(1)\n"
                         "print(a == random.randint(1, 6), random.choice([7]))\nval xs = [1, 2, 3]\nrandom.shuffle(xs)\n"
                         "print(sorted(xs), 0 <= random.random() and random.random() < 1)", "true 7\n[1, 2, 3] true\n")
+        self.assertTrue(2 <= random.uniform(2, 3) <= 3)
+        self.assertEqual(sorted(random.sample([1, 2, 3], 3)), [1, 2, 3])
 
 
 class HttpTest(UpsilTestCase):

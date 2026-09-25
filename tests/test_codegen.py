@@ -76,6 +76,39 @@ class ExpressionsTest(UpsilTestCase):
                         "Привет, Мир!\n")
 
 
+class LanguageDetailsTest(UpsilTestCase):
+    def test_bom_and_crlf(self):
+        self.assertRuns("\ufeffprint(1)\r\nprint(2)\r\n", "1\n2\n")
+
+    def test_compound_assignments(self):
+        self.assertRuns("var x = 10\nx += 5\nx -= 3\nx *= 2\nx /= 4\nvar y = 17\ny %= 5\nprint(x, y)", "6.0 2\n")
+
+    def test_matmul_operator(self):
+        tree = compile_source("fun f(a, b) { return a @ b }", "m.upl").tree
+        ops = [n.op for n in ast.walk(tree) if isinstance(n, ast.BinOp)]
+        self.assertTrue(any(isinstance(op, ast.MatMult) for op in ops))
+
+    def test_tuple_indexes(self):
+        self.assertRuns("val grid = {}\ngrid[1, 2] = \"x\"\nprint(grid[1, 2], len(grid))", "x 1\n")
+
+    def test_truthiness(self):
+        self.assertRuns('for (v in [false, null, 0, 0.0, "", [], {}, 1, "a", [0]]) { if v { print("T", end = "") } else { print("F", end = "") } }',
+                        "FFFFFFFTTT")
+
+    def test_every_builtin_exists_at_run_time(self):
+        from upsil.keywords import BUILTINS
+        src = "val all_builtins = [" + ", ".join(BUILTINS) + "]\nprint(len(all_builtins))"
+        self.assertRuns(src, f"{len(BUILTINS)}\n")
+
+    def test_closures_capture_variables_not_values(self):
+        # documented limitation of v0.2 (as in Python): a function made in a loop sees the last value
+        self.assertRuns("val fs = []\nfor (i in 0..3) {\n  fun get() { return i }\n  fs.append(get)\n}\n"
+                        "print(fs[0](), fs[2]())", "2 2\n")
+
+    def test_prompt_text_is_shown_as_a_string(self):
+        self.assertRuns(PromptOperatorTest.ECHO + "val m = Echo()\nprint([m] => [1, true])", '[null] [1, true]\n')
+
+
 class StatementsTest(UpsilTestCase):
     def test_newlines_end_statements(self):
         self.assertRuns("val x = 5\n-3\nprint(x)", "5\n")

@@ -104,6 +104,10 @@ class PrecedenceTest(UpsilTestCase):
             with self.subTest(src=src):
                 self.assertEqual(sx(parse_expression(src)), expected)
 
+    def test_not_inside_and_or(self):
+        self.assertEqual(sx(parse_expression("not a or not b and c")), "(or (not a) (and (not b) c))")
+        self.assertEqual(sx(parse_expression("a == (not b)")), "(== a (not b))")
+
     def test_parenthesized_comparisons_may_nest(self):
         self.assertEqual(sx(parse_expression("(a < b) == c")), "(== (< a b) c)")
 
@@ -230,6 +234,8 @@ class ErrorsTest(UpsilTestCase):
             ("f(from = 1)", "'from' cannot be an argument name", 1, 3),
             ("val fun = 1", "'fun' is a keyword", 1, 5),
             ("x = ()", "empty parentheses", 1, 6),
+            ("a == not b", "put 'not ...' in parentheses", 1, 6),
+            ("a + not b", "put 'not ...' in parentheses", 1, 5),
         ]
         for src, fragment, line, col in cases:
             with self.subTest(src=src):

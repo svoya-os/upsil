@@ -434,7 +434,7 @@ class Parser:
 
     # ------------------------------------------------------------------ expressions
     def expression(self, min_bp: int = 0) -> Node:
-        left = self.prefix()
+        left = self.prefix(min_bp)
         while True:
             t = self.peek()
             info = self._infix(t)
@@ -489,13 +489,16 @@ class Parser:
                     return "not in", 4, "cmp"
         return None
 
-    def prefix(self) -> Node:
+    def prefix(self, min_bp: int = 0) -> Node:
         t = self.peek()
         if t.kind == "OP" and t.value in ("-", "+"):
             self.advance()
             operand = self.expression(8)
             return Unary(t.span.to(operand.span), t.value, operand)
         if t.kind == "KW" and t.value == "not":
+            if min_bp > 3:
+                self.fail(t.span, "put 'not ...' in parentheses here: a == (not b)",
+                          "здесь 'not ...' нужно взять в скобки: a == (not b)")
             self.advance()
             operand = self.expression(3)
             return Not(t.span.to(operand.span), operand)
