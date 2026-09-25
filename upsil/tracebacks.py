@@ -21,7 +21,7 @@ import traceback
 from typing import List, Optional, Set
 
 from .errors import UpsilError
-from .i18n import tr
+from .i18n import plural_ru, tr
 
 # file names of compiled UpsiL code (filled by upsil.compiler.register_source)
 UPSIL_FILES: Set[str] = set()
@@ -96,7 +96,22 @@ def format_runtime_error(exc: BaseException) -> str:
     lines = []
     if shown:
         lines.append(tr("Runtime error (most recent call last):", "Ошибка выполнения (последний вызов — внизу):"))
-        for frame in shown:
+        previous = None
+        repeats = 0
+        for frame in shown + [None]:
+            key = None if frame is None else (frame.filename, frame.lineno, frame.name)
+            if key is not None and key == previous:
+                repeats += 1
+                if repeats < 3:
+                    lines.extend(_frame_lines(frame))
+                continue
+            if repeats >= 3:   # deep recursion: say how often the same call repeated
+                n = repeats - 2
+                lines.append("  " + tr(f"[the same call repeated {n} more time{'' if n == 1 else 's'}]",
+                                       f"[тот же вызов повторяется ещё {n} {plural_ru(n, 'раз', 'раза', 'раз')}]"))
+            if frame is None:
+                break
+            previous, repeats = key, 0
             lines.extend(_frame_lines(frame))
     lines.append(error_line(exc))
     return "\n".join(lines)

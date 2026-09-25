@@ -11,6 +11,7 @@ from __future__ import annotations
 import ast
 import linecache
 import os
+import warnings
 from typing import Optional
 
 from . import __version__
@@ -62,7 +63,11 @@ def compile_source(source: str, filename: str = "<input>", *, session: Optional[
     module = parse(source, filename)
     result = check(module, filename, source, lint_types=lint_types, session=session)
     tree = generate(result, source, repl=repl)
-    code = compile(tree, filename, "exec", dont_inherit=True)
+    with warnings.catch_warnings():
+        # CPython's hints about the generated code ("perhaps you missed a comma?") would
+        # point at Python, not at UpsiL; the same mistakes fail clearly at run time.
+        warnings.simplefilter("ignore", SyntaxWarning)
+        code = compile(tree, filename, "exec", dont_inherit=True)
     register_source(filename, source)
     return Program(code, tree, filename, source)
 

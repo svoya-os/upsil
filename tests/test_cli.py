@@ -90,6 +90,16 @@ class RuntimeErrorTest(CliTestCase):
         self.assertTrue(r.stderr.rstrip().endswith(
             f"ошибка: Локальная модель не отвечает (127.0.0.1:{port}). В СОС: sos models serve"))
 
+    def test_deep_recursion_is_summarized(self):
+        path = self.write("rec.upl", "fun down(n) {\n    return down(n + 1)\n}\ndown(0)\n")
+        r = run_cli(["run", path])
+        self.assertEqual(r.returncode, 1)
+        self.assertRegex(r.stderr, r"\[the same call repeated \d+ more times\]")
+        self.assertLess(len(r.stderr.splitlines()), 30)
+        self.assertTrue(r.stderr.rstrip().endswith("RecursionError: maximum recursion depth exceeded"))
+        r = run_cli(["run", path], extra_env={"LANG": "ru_RU.UTF-8"})
+        self.assertIn("— слишком глубокая рекурсия", r.stderr)
+
     def test_python_traceback_on_request(self):
         path = self.write("fail.upl", FAIL)
         r = run_cli(["run", path], extra_env={"UPSIL_TRACEBACK": "python"})

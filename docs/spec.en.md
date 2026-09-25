@@ -932,7 +932,9 @@ Runtime error (most recent call last):
 ZeroDivisionError: division by zero
 ```
 
-`UPSIL_TRACEBACK=python` shows the full Python traceback.
+When the same call repeats many times in a row (deep recursion), it is shown three times and
+then summarised as "the same call repeated N more times". `UPSIL_TRACEBACK=python` shows the
+full Python traceback.
 
 ### 13.4. REPL
 
