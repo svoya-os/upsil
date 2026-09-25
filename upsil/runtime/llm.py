@@ -34,7 +34,7 @@ from ..errors import UpsilError
 from . import config as _config
 from ._net import HttpError, NetError, is_loopback, open_url, read_all
 
-__all__ = ["Model", "LLMError", "models", "default_url"]
+__all__ = ["Model", "LLMError", "Error", "FormatError", "models", "default_url"]
 
 DEFAULT_URL = "http://127.0.0.1:8080/v1"
 DEFAULT_TIMEOUT = 120.0
@@ -48,6 +48,188 @@ class LLMError(UpsilError):
     def __init__(self, en: str, ru: Optional[str] = None, *, status: Optional[int] = None):
         super().__init__(en, ru)
         self.status = status
+
+
+class FormatError(LLMError):
+    """The reply is not the JSON that was asked for (``-> json`` / ``-> json(schema)``); ``reply`` is its text."""
+
+    def __init__(self, en: str, ru: Optional[str] = None, *, reply: str = ""):
+        super().__init__(en, ru)
+        self.reply = reply
+
+
+# `catch (e: llm.Error)` / `catch (e: llm.FormatError)`
+Error = LLMError
+
+
+# ---------------------------------------------------------------------- JSON shapes
+# A schema is an UpsiL value: str int float bool list dict (types), [T] (a list of T),
+# ["a", "b"] (one of these values), {"key": T, "note?": T} (an object; "?" = optional), null.
+
+def _is_type(x: Any, t: type) -> bool:
+    if x is t:
+        return True
+    if t is str:
+        from .prelude import str as upsil_str
+        return x is upsil_str
+    return False
+
+
+def _is_enum(schema: Any) -> bool:
+    return (isinstance(schema, list) and len(schema) >= 1
+            and all(v is None or isinstance(v, (str, int, float, bool)) for v in schema)
+            and not (len(schema) == 1 and isinstance(schema[0], (list, dict))))
+
+
+def _check_schema(schema: Any, where: str = "schema") -> None:
+    if schema is None or any(_is_type(schema, t) for t in (str, int, float, bool, list, dict)):
+        return
+    if isinstance(schema, dict):
+        for k, v in schema.items():
+            if not isinstance(k, str):
+                raise UpsilError(f"{where}: keys of a JSON shape are strings", f"{where}: ключи в описании JSON — строки")
+            _check_schema(v, f"{where}.{k}")
+        return
+    if isinstance(schema, list):
+        if len(schema) == 1 and not _is_enum(schema):
+            _check_schema(schema[0], f"{where}[]")
+            return
+        if _is_enum(schema):
+            return
+    from .prelude import show
+    raise UpsilError(f"{where}: {show(schema)} is not a JSON shape (use str, int, float, bool, list, dict, [T], "
+                     f"[\"a\", \"b\"] or {{\"key\": T}})",
+                     f"{where}: {show(schema)} — не описание JSON (используйте str, int, float, bool, list, dict, "
+                     f"[T], [\"a\", \"b\"] или {{\"ключ\": T}})")
+
+
+def _field(key: str) -> tuple:
+    return (key[:-1], True) if key.endswith("?") else (key, False)
+
+
+def describe_shape(schema: Any) -> str:
+    """The shape as a JSON-like skeleton, for the model: {"label": "pos" | "neg", "score": number}."""
+    if schema is None:
+        return "null"
+    for t, word in ((bool, "true | false"), (int, "integer"), (float, "number"), (str, "string"),
+                    (list, "[...]"), (dict, "{...}")):
+        if _is_type(schema, t):
+            return word
+    if isinstance(schema, dict):
+        parts = []
+        for k, v in schema.items():
+            name, optional = _field(k)
+            parts.append(f"{_json.dumps(name, ensure_ascii=False)}{'?' if optional else ''}: {describe_shape(v)}")
+        return "{" + ", ".join(parts) + "}"
+    if isinstance(schema, list):
+        if _is_enum(schema):
+            return " | ".join(_json.dumps(v, ensure_ascii=False) for v in schema)
+        return "[" + describe_shape(schema[0]) + ", ...]"
+    return "?"
+
+
+def json_schema(schema: Any) -> Dict[str, Any]:
+    """The shape as JSON Schema (for servers that constrain the output: llama.cpp, OpenAI)."""
+    if schema is None:
+        return {"type": "null"}
+    for t, js in ((bool, {"type": "boolean"}), (int, {"type": "integer"}), (float, {"type": "number"}),
+                  (str, {"type": "string"}), (list, {"type": "array"}), (dict, {"type": "object"})):
+        if _is_type(schema, t):
+            return dict(js)
+    if isinstance(schema, dict):
+        props, required = {}, []
+        for k, v in schema.items():
+            name, optional = _field(k)
+            props[name] = json_schema(v)
+            if not optional:
+                required.append(name)
+        return {"type": "object", "properties": props, "required": required}
+    if isinstance(schema, list):
+        if _is_enum(schema):
+            return {"enum": list(schema)}
+        return {"type": "array", "items": json_schema(schema[0])}
+    return {}
+
+
+def _kind(value: Any) -> tuple:
+    from .prelude import show
+    if value is None:
+        return "null", "null"
+    if isinstance(value, bool):
+        return "a boolean", "логическое значение"
+    if isinstance(value, (int, float)):
+        return f"the number {show(value)}", f"число {show(value)}"
+    if isinstance(value, str):
+        short = value if len(value) <= 40 else value[:40] + "..."
+        return f"the string {_json.dumps(short, ensure_ascii=False)}", f"строка {_json.dumps(short, ensure_ascii=False)}"
+    if isinstance(value, list):
+        return "a list", "список"
+    if isinstance(value, dict):
+        return "an object", "объект"
+    return type(value).__name__, type(value).__name__
+
+
+def conform(value: Any, schema: Any, path: str = "") -> Any:
+    """Check a parsed reply against a shape; numbers are converted where it is lossless (3.0 -> 3)."""
+    where_en = f"'{path}'" if path else "the answer"
+    where_ru = f"«{path}»" if path else "ответ"
+
+    def bad(expected_en: str, expected_ru: str) -> FormatError:
+        got_en, got_ru = _kind(value)
+        return FormatError(f"{where_en}: expected {expected_en}, got {got_en}",
+                           f"{where_ru}: ожидалось {expected_ru}, получено: {got_ru}")
+
+    if schema is None:
+        if value is not None:
+            raise bad("null", "null")
+        return None
+    if _is_type(schema, bool):
+        if not isinstance(value, bool):
+            raise bad("true or false", "true или false")
+        return value
+    if _is_type(schema, int):
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or (isinstance(value, float) and not value.is_integer()):
+            raise bad("an integer", "целое число")
+        return int(value)
+    if _is_type(schema, float):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise bad("a number", "число")
+        return float(value)
+    if _is_type(schema, str):
+        if not isinstance(value, str):
+            raise bad("a string", "строка")
+        return value
+    if _is_type(schema, list):
+        if not isinstance(value, list):
+            raise bad("a list", "список")
+        return value
+    if _is_type(schema, dict):
+        if not isinstance(value, dict):
+            raise bad("an object", "объект")
+        return value
+    if isinstance(schema, dict):
+        if not isinstance(value, dict):
+            raise bad("an object " + describe_shape(schema), "объект " + describe_shape(schema))
+        out = dict(value)
+        for k, sub in schema.items():
+            name, optional = _field(k)
+            inner = f"{path}.{name}" if path else name
+            if name not in value:
+                if optional:
+                    continue
+                raise FormatError(f"'{inner}' is missing", f"нет поля «{inner}»")
+            out[name] = conform(value[name], sub, inner)
+        return out
+    if isinstance(schema, list):
+        if _is_enum(schema):
+            if value not in schema or isinstance(value, bool) != any(isinstance(v, bool) for v in schema if v == value):
+                options = ", ".join(_json.dumps(v, ensure_ascii=False) for v in schema)
+                raise bad(f"one of {options}", f"одно из: {options}")
+            return value
+        if not isinstance(value, list):
+            raise bad("a list", "список")
+        return [conform(v, schema[0], f"{path}[{i}]") for i, v in enumerate(value)]
+    return value
 
 
 def default_url() -> str:
@@ -131,8 +313,8 @@ def parse_json_reply(text: str) -> Any:
             except ValueError:
                 continue
     short = t if len(t) <= 200 else t[:200] + "..."
-    raise LLMError(f"The model's reply is not valid JSON: {short!r}",
-                   f"Ответ модели — не JSON: {short!r}")
+    raise FormatError(f"The model's reply is not valid JSON: {short!r}",
+                      f"Ответ модели — не JSON: {short!r}", reply=t)
 
 
 class Model:
@@ -140,8 +322,9 @@ class Model:
 
     def __init__(self, name: Optional[str] = None, *, url: Optional[str] = None, api_key: Optional[str] = None,
                  timeout: Optional[float] = None, temperature: Optional[float] = None,
-                 max_tokens: Optional[int] = None, system: Optional[str] = None):
+                 max_tokens: Optional[int] = None, system: Optional[str] = None, json_retries: int = 1):
         self.url = (url or default_url()).rstrip("/")
+        self.json_retries = max(0, int(json_retries))
         self._name = name or os.environ.get("UPSIL_LLM_MODEL") or _config.get("llm", "model") or None
         if api_key is None:
             api_key = os.environ.get("UPSIL_LLM_KEY") or os.environ.get("OPENAI_API_KEY") or None
@@ -152,6 +335,7 @@ class Model:
         self.max_tokens = max_tokens
         self.system = system
         self._json_mode = True          # send response_format until the server refuses it
+        self._schema_mode = True        # … and with a JSON Schema, until the server refuses that
 
     # ------------------------------------------------------------------ info
     @property
@@ -192,21 +376,74 @@ class Model:
         return names
 
     # ------------------------------------------------------------------ chat
-    def ask(self, prompt: Any, *, system: Optional[str] = None, json: bool = False,
+    def ask(self, prompt: Any, *, system: Optional[str] = None, json: bool = False, schema: Any = None,
             temperature: Optional[float] = None, max_tokens: Optional[int] = None) -> Any:
-        """One question, one answer (a string; parsed JSON with ``json = true``)."""
-        return self.chat([{"role": "user", "content": _text(prompt)}], system=system, json=json,
+        """One question, one answer: a string; parsed JSON with ``json = true``; JSON checked
+        against a shape with ``schema = {...}`` (then ``json`` is implied)."""
+        return self.chat([{"role": "user", "content": _text(prompt)}], system=system, json=json, schema=schema,
                          temperature=temperature, max_tokens=max_tokens)
 
     def chat(self, messages: Union[str, List[Dict[str, Any]]], *, system: Optional[str] = None,
-             json: bool = False, temperature: Optional[float] = None, max_tokens: Optional[int] = None) -> Any:
-        """A conversation: ``[{"role": "user", "content": "..."}, ...]``."""
-        payload = self._payload(self._messages(messages, system, json), temperature, max_tokens, stream=False)
-        if json and self._json_mode:
-            payload["response_format"] = {"type": "json_object"}
-        data = self._post_chat(payload)
-        text = _strip_think(self._content(data))
-        return parse_json_reply(text) if json else text
+             json: bool = False, schema: Any = None, temperature: Optional[float] = None,
+             max_tokens: Optional[int] = None) -> Any:
+        """A conversation: ``[{"role": "user", "content": "..."}, ...]``.
+
+        With ``json`` (or a ``schema``) a reply that is not the JSON asked for is sent back to the
+        model with what was wrong, ``json_retries`` times (1 by default); then ``llm.FormatError``."""
+        if schema is not None:
+            _check_schema(schema)
+            json = True
+        msgs = self._messages(messages, system, json, schema)
+        attempt = 0
+        while True:
+            payload = self._payload(msgs, temperature, max_tokens, stream=False)
+            if json and self._json_mode:
+                if schema is not None and self._schema_mode:
+                    payload["response_format"] = {"type": "json_schema",
+                                                  "json_schema": {"name": "answer", "schema": json_schema(schema)}}
+                else:
+                    payload["response_format"] = {"type": "json_object"}
+            data = self._post_chat(payload)
+            text = _strip_think(self._content(data))
+            if not json:
+                return text
+            try:
+                value = parse_json_reply(text)
+                return conform(value, schema) if schema is not None else value
+            except FormatError as exc:
+                if attempt >= self.json_retries:
+                    exc.reply = exc.reply or text
+                    raise
+                attempt += 1
+                shape = f" Shape: {describe_shape(schema)}" if schema is not None else ""
+                msgs = msgs + [{"role": "assistant", "content": text},
+                               {"role": "user", "content": f"That was not the JSON I asked for ({exc.en}). "
+                                                           f"Answer again with the JSON value only.{shape}"}]
+
+    def ask_all(self, prompts: Any, *, system: Optional[str] = None, json: bool = False, schema: Any = None,
+                workers: int = 4, errors: str = "raise", temperature: Optional[float] = None,
+                max_tokens: Optional[int] = None) -> List[Any]:
+        """Many questions at once (``workers`` in parallel); answers come back in the same order.
+        ``errors = "null"`` puts null in place of a failed answer instead of stopping."""
+        from concurrent.futures import ThreadPoolExecutor
+        if errors not in ("raise", "null"):
+            raise UpsilError('ask_all: errors is "raise" or "null"', 'ask_all: errors — "raise" или "null"')
+        items = list(prompts)
+        if schema is not None:
+            _check_schema(schema)
+        if items and not self._name:
+            _ = self.name                      # resolve the model once, not in every thread
+
+        def one(item: Any) -> Any:
+            try:
+                return self.ask(item, system=system, json=json, schema=schema, temperature=temperature,
+                                max_tokens=max_tokens)
+            except LLMError:
+                if errors == "null":
+                    return None
+                raise
+        with ThreadPoolExecutor(max_workers=max(1, int(workers))) as pool:
+            return list(pool.map(one, items))
 
     def stream(self, prompt: Union[str, List[Dict[str, Any]]], *, system: Optional[str] = None,
                temperature: Optional[float] = None, max_tokens: Optional[int] = None) -> Iterator[str]:
@@ -236,10 +473,12 @@ class Model:
         return urllib.parse.urlsplit(self.url).netloc or self.url
 
     def _messages(self, messages: Union[str, List[Dict[str, Any]]], system: Optional[str],
-                  json: bool) -> List[Dict[str, str]]:
+                  json: bool, schema: Any = None) -> List[Dict[str, str]]:
         sys_text = system if system is not None else self.system
         if json:
             sys_text = (sys_text + "\n\n" if sys_text else "") + JSON_INSTRUCTION
+            if schema is not None:
+                sys_text += f" Shape: {describe_shape(schema)}"
         out: List[Dict[str, str]] = []
         if sys_text:
             out.append({"role": "system", "content": _text(sys_text)})
@@ -299,15 +538,21 @@ class Model:
                            f"Сервер {self._host()} ответил не в формате JSON; это точно API, совместимый с OpenAI?") from None
 
     def _post_chat(self, payload: Dict[str, Any]) -> Any:
-        try:
-            return self._request("POST", self.url + "/chat/completions", payload)
-        except LLMError as exc:
-            if exc.status == 400 and "response_format" in payload:
-                # the server has no JSON mode: ask for JSON in words only
-                self._json_mode = False
-                payload = {k: v for k, v in payload.items() if k != "response_format"}
+        while True:
+            try:
                 return self._request("POST", self.url + "/chat/completions", payload)
-            raise
+            except LLMError as exc:
+                fmt = payload.get("response_format")
+                if exc.status != 400 or not fmt:
+                    raise
+                if fmt.get("type") == "json_schema":
+                    # no JSON Schema support: plain JSON mode, the shape stays in the prompt
+                    self._schema_mode = False
+                    payload = {**payload, "response_format": {"type": "json_object"}}
+                else:
+                    # no JSON mode at all: ask for JSON in words only
+                    self._json_mode = False
+                    payload = {k: v for k, v in payload.items() if k != "response_format"}
 
     @staticmethod
     def _content(data: Any) -> str:
