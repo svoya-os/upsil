@@ -5,17 +5,18 @@ build/
 dist/
 .venv/
 venv/
-.upsil-out/
+
+# editor extension packages are built in CI, never committed
+*.vsix
+vscode-upsil/node_modules/
 
 # --- common ignores ---
 .env
 .env.*
 !.env.example
-node_modules/
-*.pyc
 .pytest_cache/
-.next/
-*.exe
-*.7z
+.coverage
+htmlcov/
 Thumbs.db
 desktop.ini
+.DS_Store

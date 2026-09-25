@@ -1,8 +1,0 @@
-fun auto_gc_test() {
-    // 1. Manually allocate 1024 bytes in RAM
-    val ptr = malloc(1024.0)
-    
-    // We NO LONGER call free(ptr) manually!
-    // The Cortex GC will inject the free() automatically at the end of this scope.
-    return 1.0
-}

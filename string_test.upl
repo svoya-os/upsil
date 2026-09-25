@@ -1,3 +1,0 @@
-fun main() {
-    print("Native LLVM Strings are working!\n")
-}

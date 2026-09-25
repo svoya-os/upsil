@@ -1,8 +1,0 @@
-fun main() {
-    print("Testing UpsiL Array Bounds Checking...\n")
-    val arr = [10, 20, 30]
-    print("Trying to access arr[-1] (should panic and abort):\n")
-    val idx = 0 - 1
-    print(arr[idx])
-    print("You should not see this line.\n")
-}
