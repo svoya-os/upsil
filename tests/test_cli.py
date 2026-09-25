@@ -120,6 +120,16 @@ class CompileErrorTest(CliTestCase):
         self.assertEqual(r.returncode, 2)
         self.assertIn(f"{path}:2:11: ошибка: неожиданный токен ')' — ожидалось выражение", r.stderr)
 
+    def test_language_detection_order(self):
+        from upsil.i18n import detect_lang
+        self.assertEqual(detect_lang({"LANG": "ru_RU.UTF-8"}), "ru")
+        self.assertEqual(detect_lang({"LANG": "de_DE.UTF-8"}), "en")
+        self.assertEqual(detect_lang({"LC_ALL": "en_US.UTF-8", "LANG": "ru_RU.UTF-8"}), "en")
+        self.assertEqual(detect_lang({"LC_MESSAGES": "ru_RU.UTF-8", "LANG": "en_US.UTF-8"}), "ru")
+        self.assertEqual(detect_lang({"UPSIL_LANG": "en", "LC_ALL": "ru_RU.UTF-8"}), "en")
+        self.assertEqual(detect_lang({"LANGUAGE": "ru:en"}), "ru")
+        self.assertEqual(detect_lang({}), "en")
+
     def test_upsil_lang_wins(self):
         path = self.write("bad.upl", BAD)
         r = run_cli(["run", path], extra_env={"LANG": "ru_RU.UTF-8", "UPSIL_LANG": "en"})

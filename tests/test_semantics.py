@@ -192,6 +192,7 @@ class SemanticsTest(UpsilTestCase):
         self.assertError('val x: int = "a"', "type mismatch: 'x' is declared as int but the value is a string",
                          1, 14, lint=True)
         self.assertError("val s: str = 1", "is declared as str but the value is an integer", lint=True)
+        self.assertError("val s: string = 1", "is declared as string but the value is an integer", lint=True)
         self.assertError('fun f(a: int = "x") {}', "parameter 'a' is declared as int", lint=True)
         self.assertError('fun f() -> int { return "x" }', "the result of f() is declared as int", lint=True)
         self.assertError('class C {\n  val n: bool = [1]\n}', "is declared as bool but the value is a list", lint=True)

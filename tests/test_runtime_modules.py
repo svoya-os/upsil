@@ -90,6 +90,10 @@ class HttpTest(UpsilTestCase):
         with MockOpenAI() as mock:
             self.assertIn('"mock-small"', http.get(mock.url + "/models"))
             self.assertEqual(http.get_json(mock.url + "/models")["data"][0]["id"], "mock-small")
+            text = http.post(mock.url + "/chat/completions", "plain text", headers={"X-Test": "1"})
+            self.assertIn('"chat.completion"', text)
+            self.assertEqual(mock.requests[-1]["headers"]["Content-Type"], "text/plain; charset=utf-8")
+            self.assertEqual(mock.requests[-1]["headers"]["X-Test"], "1")
             reply = http.post_json(mock.url + "/chat/completions", {"model": "m", "messages": [{"role": "user", "content": "q"}]})
             self.assertEqual(reply["choices"][0]["message"]["content"], "echo: q")
             with lang("en"), self.assertRaises(UpsilError) as cm:

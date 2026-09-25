@@ -47,6 +47,9 @@ class ModelCodegenTest(UpsilTestCase):
             self.assertEqual(run_upl("import nn\nimport nn.functional as F\n"
                                      "print(nn.relu([-1, 2]), F.relu([3, -3]), nn.tensor([1, 2]), nn.available())"),
                              "[0, 2] [3, 0] [1, 2] true\n")
+            import torch
+            from upsil.runtime import nn
+            self.assertIs(nn.torch, torch)
 
     def test_missing_torch_is_a_clear_error(self):
         with modules(torch=None):

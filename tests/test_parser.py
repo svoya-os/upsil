@@ -145,6 +145,11 @@ class StatementsTest(UpsilTestCase):
         self.assertIsInstance(s.orelse[0], n.If)
         self.assertEqual(len(s.orelse[0].orelse), 1)
 
+    def test_brace_on_the_next_line(self):
+        src = ("fun f()\n{\n  while x\n  {\n  }\n  for (i in xs)\n  {\n  }\n}\n"
+               "class C\n{\n  val a = 1\n}\nmodel M\n{\n  graph forward(x)\n  {\n    return x\n  }\n}")
+        self.assertEqual(stmt_kinds(src), ["FunDecl", "ClassDecl", "ClassDecl"])
+
     def test_bare_return_at_end_of_line(self):
         f = parse("fun f() {\n  return\n  x\n}").body[0]
         self.assertIsNone(f.body[0].value)
@@ -235,6 +240,8 @@ class ErrorsTest(UpsilTestCase):
             ("val fun = 1", "'fun' is a keyword", 1, 5),
             ("x = ()", "empty parentheses", 1, 6),
             ("a == not b", "put 'not ...' in parentheses", 1, 6),
+            ("a ? b", "unexpected '?'", 1, 3),
+            ("a = b = 1", "expected the end of the statement", 1, 7),
             ("a + not b", "put 'not ...' in parentheses", 1, 5),
         ]
         for src, fragment, line, col in cases:

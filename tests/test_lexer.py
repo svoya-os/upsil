@@ -80,6 +80,7 @@ class StringTest(UpsilTestCase):
     def test_escapes(self):
         self.assertEqual(string_parts(r'"a\nb\t\"q\" \\ \{x\} \u0041 \u{1F600}"'),
                          ['a\nb\t"q" \\ {x} A \U0001F600'])
+        self.assertEqual(string_parts(r'"\r\0\'"'), ["\r\0'"])
 
     def test_bad_escape(self):
         msg, line, col, _ = lex_error(r'x = "a\qb"')

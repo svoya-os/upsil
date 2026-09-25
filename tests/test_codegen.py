@@ -95,6 +95,11 @@ class LanguageDetailsTest(UpsilTestCase):
         self.assertRuns('for (v in [false, null, 0, 0.0, "", [], {}, 1, "a", [0]]) { if v { print("T", end = "") } else { print("F", end = "") } }',
                         "FFFFFFFTTT")
 
+    def test_plus_does_not_join_a_string_and_a_number(self):
+        with self.assertRaises(TypeError):
+            run_upl('print("a" + 1)')
+        self.assertRuns('print("a" + str(1), "a{1}")', "a1 a1\n")
+
     def test_every_builtin_exists_at_run_time(self):
         from upsil.keywords import BUILTINS
         src = "val all_builtins = [" + ", ".join(BUILTINS) + "]\nprint(len(all_builtins))"
