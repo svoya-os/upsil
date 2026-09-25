@@ -1,8 +1,8 @@
-# UpsiL 0.2 language specification
+# UpsiL 0.3 language specification
 
 [Русская версия](spec.md) · [Tutorial (Russian)](tutorial.md) · [README](../README.en.md)
 
-> **Status: v0.2 is an early version.** This document describes only what is implemented and
+> **Status: v0.3 is an early version.** This document describes only what is implemented and
 > covered by tests (`python3 -m unittest discover -s tests`). The code examples here are
 > tested too: every block compiles, and the output shown is the real output. If `upsil`
 > behaves differently from this text, that is a bug; please report it.
@@ -22,7 +22,7 @@
 11. [Built-in functions](#11-built-in-functions)
 12. [Modules](#12-modules)
 13. [Compiling, running and errors](#13-compiling-running-and-errors)
-14. [Not in v0.2](#14-not-in-v02)
+14. [Not in v0.3](#14-not-in-v03)
 
 ## 1. Overview
 
@@ -117,8 +117,8 @@ Reserved, and so not usable as names:
 
 - UpsiL keywords (2.4);
 - Python keywords that are not UpsiL keywords:
-  `False None True assert async await def del elif except finally from global is lambda
-  nonlocal pass raise try with yield`, because the program compiles to Python;
+  `False None True async await def del elif except from global is lambda nonlocal pass raise
+  yield`, because the program compiles to Python;
 - `self` and `super` (they cannot be declared);
 - names that start with `_upsil` (the compiler's own names).
 
@@ -128,6 +128,7 @@ Always keywords:
 
 ```text
 if else while for return break continue
+try catch finally throw with assert
 fun val var class import as
 and or not in
 true false null
@@ -213,6 +214,18 @@ Summarize the text in three points.
   Text: "..."
 ```
 
+**Raw strings** `r"..."` and `r"""..."""` take the text as written: backslashes and braces are
+plain characters, with no escapes and no interpolation. They suit regular expressions and
+Windows paths. `r"..."` cannot contain `"`, and `r"""..."""` cannot contain `"""`; a multi-line
+raw string is not dedented.
+
+```upsil
+print(r"\d{4}-\d{2}", r"C:\Users\max", len(r"\n"))
+```
+```output
+\d{4}-\d{2} C:\Users\max 2
+```
+
 ### 2.7. Operators and punctuation
 
 ```text
@@ -235,17 +248,20 @@ Notation: `{ x }` is zero or more repetitions, `[ x ]` is optional, `|` is a cho
 program       = { separator } { statement { separator } } ;
 separator     = NEWLINE | ";" ;
 
-statement     = var_decl | resource_decl | fun_decl | class_decl | model_decl
-              | if_stmt | while_stmt | for_stmt
-              | "return" [ expression ] | "break" | "continue"
+statement     = var_decl | destruct_decl | resource_decl | fun_decl | class_decl | model_decl
+              | if_stmt | while_stmt | for_stmt | try_stmt | with_stmt
+              | "return" [ values ] | "break" | "continue"
+              | "throw" [ expression ] | "assert" expression [ "," expression ]
               | import_stmt | assignment | expression ;
-(* Simple statements (all except fun, class, model, if, while, for) must end with a
-   separator, "}" or the end of the file. *)
+(* Simple statements (all except fun, class, model, if, while, for, try, with) must end with
+   a separator, "}" or the end of the file. *)
+values        = expression { "," expression } ;             (* two or more make a tuple *)
 
 block         = "{" { separator } { statement { separator } } "}" ;
 
 var_decl      = ( "val" | "var" ) NAME [ ":" type ] [ "=" expression ] ;
               (* a val needs a value, except for class fields *)
+destruct_decl = ( "val" | "var" ) "(" NAME { "," NAME } [ "," ] ")" "=" values ;
 resource_decl = ( "llm" | "vector_store" ) NAME [ "=" expression ] ;
 type          = NAME { "." NAME } [ "[" type { "," type } "]" ] [ "?" ] ;
 
@@ -262,11 +278,18 @@ while_stmt    = "while" expression block ;
 for_stmt      = "for" "(" loop_target "in" expression ")" block
               | "for" loop_target "in" expression block ;
 loop_target   = NAME { "," NAME } | "(" NAME { "," NAME } ")" ;
+try_stmt      = "try" block { catch_clause } [ "finally" block ] ;   (* at least one catch or finally *)
+catch_clause  = "catch" [ "(" NAME [ ":" NAME { "." NAME } ] ")" ] block ;
+with_stmt     = "with" ( with_items | "(" with_items ")" ) block ;
+with_items    = expression [ "as" NAME ] { "," expression [ "as" NAME ] } ;
 
 import_stmt   = "import" NAME [ "." NAME ] [ "as" NAME ]
-              | "import" "py" STRING [ "as" NAME ] ;
+              | "import" "py" STRING [ "as" NAME ]
+              | "import" STRING [ "as" NAME ] ;                     (* another .upl file *)
 
-assignment    = target ( "=" | "+=" | "-=" | "*=" | "/=" | "%=" ) expression ;
+assignment    = targets "=" values
+              | target ( "+=" | "-=" | "*=" | "/=" | "%=" ) expression ;
+targets       = target { "," target } | "(" target { "," target } ")" ;
 target        = NAME | postfix "." NAME | postfix "[" subscripts "]" ;
 
 expression    = or_expr ;
@@ -286,11 +309,26 @@ argument      = [ NAME "=" ] expression ;                     (* named after pos
 subscripts    = subscript { "," subscript } [ "," ] ;
 subscript     = expression | [ expression ] ":" [ expression ] [ ":" [ expression ] ] ;
 primary       = NUMBER | STRING | "true" | "false" | "null" | NAME
-              | "(" expression ")" | list | dict | prompt ;
+              | "(" expression ")" | tuple | list | dict | prompt
+              | if_expr | lambda | list_comp | dict_comp | gen_expr ;
+tuple         = "(" expression "," [ expression { "," expression } [ "," ] ] ")" ;
 list          = "[" [ expression { "," expression } [ "," ] ] "]" ;
 dict          = "{" [ expression ":" expression { "," expression ":" expression } [ "," ] ] "}" ;
-prompt        = "[" expression [ "," "system" ":" expression ] "]" "=>" expression [ "->" "json" ] ;
+prompt        = "[" expression [ "," "system" ":" expression ] "]" "=>" expression
+                [ "->" "json" [ "(" expression ")" ] ] ;
+if_expr       = "if" "(" expression ")" expression "else" expression ;
+lambda        = ( NAME | "(" [ NAME [ ":" type ] { "," NAME [ ":" type ] } ] ")" ) "=>" expression ;
+list_comp     = "[" expression comp_for { comp_for } "]" ;
+dict_comp     = "{" expression ":" expression comp_for { comp_for } "}" ;
+gen_expr      = "(" expression comp_for { comp_for } ")" ;
+              (* as the only argument of a call, without its own parentheses: sum(x for x in xs) *)
+comp_for      = "for" ( loop_target "in" expression | "(" loop_target "in" expression ")" )
+                { "if" expression } ;
 ```
+
+An `if`-expression and a lambda take the whole expression to their right:
+`if (c) 1 else 2 + 3` is `if (c) 1 else (2 + 3)`, and `x => x + 1` returns `x + 1`. Put them in
+parentheses to use them inside a bigger expression.
 
 The right side of a prompt (after `=>`) is a whole expression: `[m] => "a" + b` sends the model
 `"a" + b`. To use the answer inside a bigger expression, put the prompt in parentheses:
@@ -423,6 +461,88 @@ and dicts; lists `[1, 2]`; dicts `{"a": 1}`; ranges `0..3`; objects of UpsiL cla
 `Name(field=value, ...)`. Other objects (tensors, for example) are shown the way Python shows
 them.
 
+### 4.10. Tuples
+
+A tuple is an immutable sequence: `(1, "two")`; a one-value tuple is `(7,)`. A function can
+return several values separated by commas, which makes a tuple: `return lo, hi`. Parentheses
+without a comma only group: `(1 + 2) * 3`.
+
+```upsil
+fun min_max(xs) {
+    return min(xs), max(xs)
+}
+val pair = min_max([4, 2, 9])
+print(pair, pair[0], (7,), len((1, 2, 3)))
+```
+```output
+(2, 9) 2 (7,) 3
+```
+
+### 4.11. The `if` expression
+
+`if (condition) a else b` is `a` when the condition is true and `b` otherwise. The condition
+goes in parentheses and `else` is required; the values may start on the next line. A chain is
+`if (a) x else if (b) y else z`.
+
+```upsil
+fun sign(n) {
+    return if (n > 0) "+" else if (n < 0) "-" else "0"
+}
+val label = if (len([1, 2, 3]) > 2)
+    "many"
+    else "few"
+print(sign(5), sign(-2), sign(0), label)
+```
+```output
++ - 0 many
+```
+
+### 4.12. Lambdas
+
+A lambda is a short nameless function of one expression: `x => x * 2`, `(a, b) => a + b`,
+`() => 42`. Parameters can have types: `(s: str) => s.upper()`. A lambda sees the variables
+around it (like a nested function); its parameters cannot be changed. For several statements
+declare an ordinary `fun`.
+
+```upsil
+val double = x => x * 2
+val words = ["banana", "apple", "kiwi"]
+print(double(21), sorted(words, key = w => len(w)))
+print(list(map(n => n * n, 1..=4)), list(filter(n => n % 2 == 0, 0..6)))
+val templates = {"short": q => "Answer in one word: {q}"}
+print(templates["short"]("the capital of France?"))
+```
+```output
+42 ["kiwi", "apple", "banana"]
+[1, 4, 9, 16] [0, 2, 4]
+Answer in one word: the capital of France?
+```
+
+### 4.13. List and dict comprehensions
+
+`[expression for x in xs if condition]` builds a list, `{key: value for ...}` a dict. The loop
+takes either form of `for` (with or without parentheses), can unpack a pair, and several loops
+and conditions can follow one another. The variables of a comprehension are visible only
+inside it.
+
+Without brackets, as the only argument of a call, a comprehension yields its values one by one
+without building a list: `sum(x * x for x in xs)`. Elsewhere such a generator is written in
+parentheses: `(x for x in xs)`.
+
+```upsil
+val xs = [3, 1, 4, 1, 5]
+print([x * x for x in xs if x > 1])
+print({w: len(w) for w in ["ab", "c"]})
+print([a * b for a in 1..=2 for b in 1..=3])
+print(sum(x for x in xs), [(i, c) for (i, c) in enumerate("ab")])
+```
+```output
+[9, 16, 25]
+{"ab": 2, "c": 1}
+[1, 2, 3, 2, 4, 6]
+14 [(0, "a"), (1, "b")]
+```
+
 ## 5. Statements
 
 ### 5.1. `val` and `var`
@@ -513,6 +633,148 @@ nested function inside a loop) they are compile errors.
 the function) returns `null`. `return` outside a function is a compile error. The expression
 must start on the same line as `return`.
 
+### 5.8. Unpacking
+
+`val (a, b) = pair` declares several variables at once from a sequence (a tuple, a list, a
+string); `var (x, y) = ...` declares mutable ones. The number of names must match the number of
+values. Mutable variables can take several values at once: `a, b = b, a`.
+
+```upsil
+val (name, age) = ("Anna", 30)
+var (a, b) = 1, 2
+a, b = b, a
+print(name, age, a, b)
+```
+```output
+Anna 30 2 1
+```
+
+### 5.9. Errors: `try`, `catch`, `finally`, `throw`
+
+`throw value` stops with an error. The value is a message or an error object:
+`throw "no file"`, `throw ValueError("bad number")`.
+
+`try { ... } catch (e) { ... }` catches an error raised in the `try` block and runs the `catch`
+block; `e` is the caught error (`"{e}"` is its text). A type can be given, and several `catch`
+clauses can follow one another; the first one that fits runs: `catch (e: ValueError)`,
+`catch (e: llm.FormatError)`. `catch (e)` and `catch (e: Error)` catch any error of the program
+(but not Ctrl-C or `sys.exit`); `catch { ... }` without parentheses does the same without a
+name. A `finally { ... }` block always runs, after success and after an error. A `try` needs at
+least one `catch` or `finally`.
+
+Inside `catch`, `throw` without a value sends the caught error further. The caught error cannot
+be changed and is visible only in its `catch` block.
+
+```upsil
+fun parse_age(text) {
+    val n = int(text)
+    if n < 0 {
+        throw "age cannot be negative: {n}"
+    }
+    return n
+}
+for (text in ["30", "abc", "-5"]) {
+    try {
+        print("age:", parse_age(text))
+    } catch (e: ValueError) {
+        print("not a number:", text)
+    } catch (e) {
+        print("error:", e)
+    } finally {
+        print("checked", text)
+    }
+}
+```
+```output
+age: 30
+checked 30
+not a number: abc
+checked abc
+error: age cannot be negative: -5
+checked -5
+```
+
+An error that nobody catches stops the program:
+
+```upsil
+fun check(n) {
+    if n < 0 { throw "negative number: {n}" }
+    return n
+}
+check(-5)
+```
+```output
+Runtime error (most recent call last):
+  example.upl:5, in <program>
+    check(-5)
+  example.upl:2, in check
+    if n < 0 { throw "negative number: {n}" }
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+error: negative number: -5
+```
+
+```upsil-error
+throw
+```
+```output
+example.upl:1:1: error: a bare 'throw' re-throws the caught error, so it belongs inside catch { }; otherwise write throw "what went wrong"
+  1 | throw
+    | ^^^^^
+```
+
+### 5.10. `with`
+
+`with expression as name { ... }` runs the block inside a context: an object that prepares
+something before the block and cleans up after it, even when the block fails. This is how
+`nn.no_grad()` (computing without gradients), `nn.evaluating(net)` and Python objects with
+`__enter__`/`__exit__` methods work. `as name` is optional; several contexts are separated by
+commas, and the whole list may be put in parentheses. The name from `as` is visible only in the
+block and cannot be changed.
+
+```upsil
+class Step {
+    val name: str
+    fun __enter__() {
+        print("start:", name)
+        return self
+    }
+    fun __exit__(kind, value, trace) {
+        print("end:", name)
+        return false
+    }
+}
+with Step("load") as s, Step("parse") {
+    print("working:", s.name)
+}
+```
+```output
+start: load
+start: parse
+working: load
+end: parse
+end: load
+```
+
+### 5.11. `assert`
+
+`assert condition` checks the condition and, when it is false, stops the program with the error
+"assertion failed: condition"; `assert condition, message` uses your message. `catch (e:
+AssertionError)` catches it. Assertions always run (even under `python -O`) and are handy in
+tests (`upsil test`, section 13.2).
+
+```upsil
+val scores = [0.9, 0.7]
+assert len(scores) == 2
+try {
+    assert min(scores) > 0.8, "weak answers: {min(scores)}"
+} catch (e: AssertionError) {
+    print(e)
+}
+```
+```output
+weak answers: 0.7
+```
+
 ## 6. Functions
 
 ```upsil
@@ -572,6 +834,9 @@ functions created in a loop body see the last value of the loop variable.
   may declare the same names.
 - Built-in functions (section 11) can be shadowed by your own declarations.
 - `class`, `model` and `import` are only allowed at the top level.
+- The caught error of `catch (e)`, the name of `with ... as x`, the variables of a
+  comprehension and the parameters of a lambda are visible only in their own block or
+  expression and cannot be changed.
 
 The compiler finds these errors before running and reports all of them at once:
 
@@ -744,6 +1009,10 @@ print(short, terse, data["name"])
   only, and `response_format` is used when the server supports it. The answer is parsed (a
   ```json fence and chatter around it are tolerated) and returned as a dict or list; if it is
   not JSON, that is a run-time error.
+- `-> json(shape)` says what JSON is needed and checks the answer (section 9.5).
+- When the answer is not the JSON asked for, the model is told what is wrong and asked again
+  (`json_retries` times, 1 by default); if that does not help, the error is `llm.FormatError`,
+  which can be caught: `catch (e: llm.FormatError)`; the reply text is `e.reply`.
 - `m` can be any object with an `ask(text, system, json)` method, for example your own class.
 - Interpolation in the prompt text inserts data as text: variable contents are never run or
   treated as a template.
@@ -794,6 +1063,44 @@ PyTorch is installed. PyTorch is imported on first use; install it with `pip ins
 `uv tool install 'upsil[nn]'`. A complete example:
 [examples/neural_net.upl](../examples/neural_net.upl).
 
+### 9.5. Answer shapes and batches of requests
+
+A shape is an ordinary UpsiL value that describes the JSON you need:
+
+| Shape | What must come back |
+|---|---|
+| `str`, `int`, `float`, `bool` | a string, an integer, a number (integers fit too), true/false |
+| `list`, `dict` | any list, any object |
+| `[T]` | a list whose every item fits `T` |
+| `["a", "b", "c"]` | one of these values |
+| `{"key": T, "note?": T}` | an object with these fields; a trailing `?` makes a field optional |
+| `null` | null |
+
+`[m] => text -> json(shape)` and `m.ask(text, schema = shape)` add the shape to the system
+prompt, and pass it as a JSON Schema to servers that can constrain their output (llama.cpp,
+OpenAI). The answer is checked; numbers are converted when nothing is lost (`3.0` for `int`
+becomes `3`); extra fields are kept.
+
+`m.ask_all(questions, ...)` asks many questions at once (`workers` in parallel, 4 by default)
+and returns the answers in the same order. It takes the same options as `ask` (`system`,
+`json`, `schema`...); `errors = "null"` puts `null` in place of an answer that could not be
+had and carries on, instead of stopping at the first error.
+
+```upsil
+import llm
+
+llm m = llm.Model(temperature = 0.0)
+val shape = {"label": ["pos", "neg", "neu"], "score": float}
+val reviews = ["Great laptop", "The screen broke after a week"]
+val answers = m.ask_all(["Rate the sentiment of this review: {r}" for r in reviews],
+                        schema = shape, errors = "null")
+for (text, a) in zip(reviews, answers) {
+    if a != null {
+        print("{a["label"]} {a["score"]:.1f}  {text}")
+    }
+}
+```
+
 ## 10. Imports
 
 ```upsil
@@ -804,10 +1111,17 @@ import py "os.path"              // binds the name os
 ```
 
 UpsiL modules: `llm`, `rag`, `nn`, `fs`, `http`, `json`, `ui`, `sys`, `math`, `time`,
-`random` (section 12). `import x.y as z` binds `z` to `x.y`; deeper imports are not allowed.
+`random`, `csv`, `re` (section 12). `import x.y as z` binds `z` to `x.y`; deeper imports are not allowed.
 `import py "name"` brings in any Python module (without `as`, the first part of the dotted name
-is bound, as in Python). Imports are only allowed at the top level of a file. v0.2 cannot import
-other `.upl` files; a Python module next to the script is available through `import py`.
+is bound, as in Python). Imports are only allowed at the top level of a file.
+
+**Other UpsiL files.** `import "helpers.upl" as h` runs the file `helpers.upl` (the path is
+relative to the program's folder) and binds `h` to its top level: its functions, classes and
+variables become attributes, `h.shout(...)`. Without `as`, the name comes from the file name:
+`import "lib/data.upl"` binds `data`. The short form `import helpers` finds `helpers.upl` next to
+the program, unless an UpsiL module has that name. Each file runs once, however often it is
+imported; a missing file is a compile error; a circular import (`a.upl` → `b.upl` → `a.upl`) is
+a run-time error. A Python module next to the script is available through `import py`.
 
 ## 11. Built-in functions
 
@@ -821,6 +1135,11 @@ Available without an import:
 | `div(a, b)` | integer division rounding down |
 | `error(message)` | stops the program with the error `message` |
 | `int float bool len range list dict set tuple min max sum abs round sorted reversed enumerate zip map filter any all chr ord format isinstance divmod pow iter next hash` | as in Python |
+
+Error types for `catch (e: ...)` and `throw`: `Error` (any error of the program), `ValueError`,
+`TypeError`, `KeyError`, `IndexError`, `ZeroDivisionError`, `FileNotFoundError`,
+`TimeoutError`, `RuntimeError`, `AssertionError`; modules have their own: `llm.Error`,
+`llm.FormatError`.
 
 Other Python functions (`open`, `eval`, `getattr`...) are not UpsiL built-ins; if needed, get
 them with `import py "builtins"`.
@@ -837,13 +1156,58 @@ answer to a conversation, where `messages` is a list of `{"role": ..., "content"
 `name`, `url`. Functions `llm.models()`, `llm.default_url()`. While the server loads a model
 (HTTP 503), the request is retried within `timeout`.
 
+New in 0.3: `llm.Model(..., json_retries = 1)`; `ask` and `chat` take `schema` (9.5);
+`ask_all(prompts, system = null, json = false, schema = null, workers = 4, errors = "raise")`.
+Errors: `llm.Error` (any model error), `llm.FormatError` (not the JSON asked for; field
+`reply`).
+
 **rag**: the document store (9.3).
 `rag.VectorStore(model = null, backend = "auto", url = null, chunk_size = 1000)`; methods
 `add(text, meta = null)` (returns the `id`), `add_dir(path, glob = "*.md")` (returns the
 number of fragments), `search(query, k = 3)`, `context(query, k = 3)` (the texts found, as one
 string for a prompt), `save(path)`; `rag.VectorStore.load(path)`; `len(db)`; field `backend`.
 
-**nn**: PyTorch (9.4).
+**nn**: PyTorch (9.4) and UpsiL's helpers:
+
+- `nn.fit(model, x, y, epochs = 10, lr = 0.001, batch = 32, loss = null, optimizer = null,
+  val = null, every = 1, device = null, shuffle = true, quiet = false)` trains the model and
+  returns the history: a list of dicts `{"epoch", "loss", "val_loss", "val_accuracy"}`. The
+  defaults are Adam with `lr`, and cross entropy when `y` holds class numbers or MSE when it
+  holds numbers (for 0/1 probabilities pass `loss = nn.binary_cross_entropy`).
+  `val = (x_val, y_val)` adds a check on held-out data. Every `every` epochs a line like
+  "epoch 20/60 · loss 0.2928 · val 0.2654 · accuracy 92.5%" is printed. Ctrl-C stops training
+  early and keeps what was learned. After training the model is in evaluation mode.
+- `nn.batches(x, y, ..., size = 32, shuffle = false, drop_last = false)`: mini-batches of
+  equally long tensors, `for ((xb, yb) in nn.batches(x, y, size = 64, shuffle = true))`.
+- `nn.evaluating(model)`: a context for `with`, evaluation mode and no gradients inside, the
+  previous mode after.
+- `nn.accuracy(model, x, y)`: the share of right answers of a classifier (0.0–1.0).
+- `nn.auto_device()` is `"cuda"`, `"mps"` or `"cpu"`; `nn.count_params(model)` is how many
+  numbers the model learns.
+
+An example: [examples/spirals.upl](../examples/spirals.upl).
+
+**csv**: tables. `read(path, sep = ",", header = true, numbers = false)` gives the rows of a
+file as dicts keyed by the first row (lists with `header = false`); `numbers = true` turns
+numbers in the text into numbers. `parse(text, ...)` does the same for a string.
+`write(path, rows, columns = null, sep = ",")` writes a list of dicts (columns from the keys) or
+of lists and returns the number of rows; `stringify(rows, ...)` returns the text.
+
+**re**: regular expressions (patterns are best written as raw strings `r"..."`):
+`test(pattern, text)` says whether there is a match; `find` gives the first match or `null`;
+`find_all` gives every match (with one group `( )` its text, with several a list);
+`groups` gives the groups of the first match or `null`; `replace(pattern, replacement, text)`
+replaces with text (`\1` is a group) or with the result of a function of the match;
+`split(pattern, text)`; `escape(text)`. All take `ignore_case = true`.
+
+```upsil
+import re
+val log = "10:02 WARN gpu 83C; 10:03 ERROR data"
+print(re.find_all(r"(WARN|ERROR) (\w+)", log), re.replace(r"\d+C", t => "{int(t[:-1]) + 1}C", log))
+```
+```output
+[["WARN", "gpu"], ["ERROR", "data"]] 10:02 WARN gpu 84C; 10:03 ERROR data
+```
 
 **fs**: files (text is UTF-8): `read(path)`, `write(path, text)`, `append(path, text)`,
 `lines(path)`, `exists(path)`, `is_file(path)`, `is_dir(path)`, `list(path = ".", glob = "*")`
@@ -893,6 +1257,7 @@ code.
 | `upsil run -` | reads the program from standard input |
 | `upsil build FILE [-o OUT]` | prints the generated Python or writes it to `OUT` (never next to the source by itself, never over it) |
 | `upsil check FILE...` | looks for errors without running, including literal type mismatches |
+| `upsil test [PATH...]` | runs the tests: `fun test_...()` functions in `test_*.upl` and `*_test.upl` files (in the given folders or the current one, with subfolders) |
 | `upsil repl` | interactive mode |
 | `upsil version`, `upsil help` | version and help |
 
@@ -900,6 +1265,20 @@ code.
 
 Exit codes: `0` success, `1` run-time error, `2` compile error, `64` usage error (no such file,
 unknown command). `sys.exit(n)` ends the program with code `n`.
+
+`upsil test` first runs the top level of a test file (imports, declarations), then every
+`test_...` function in file order. A test passes when the function returns; it fails when an
+`assert` fails or an error happens, and then the message and the line are shown:
+
+```text
+tests/test_text.upl
+  ✓ test_words
+  ✗ test_shout — the exclamation mark is extra  (tests/test_text.upl:6)
+2 tests: 1 passed, 1 failed (0.01 s)
+```
+
+The exit code of `upsil test` is `0` when all pass, `1` when some fail, `2` for a compile error
+in a test file, and `64` when no tests are found.
 
 ### 13.3. Error messages
 
@@ -942,9 +1321,10 @@ full Python traceback.
 Input continues while a bracket is open or a line ends with an operator; an empty line ends the
 input. Names can be declared again. Exit with Ctrl-D or `:q`.
 
-## 14. Not in v0.2
+## 14. Not in v0.3
 
-Deliberately left for later: exception handling (`try`/`catch`), anonymous functions, `if` as
-an expression, tuple literals and unpacking in assignments, class inheritance, static type
-checking, importing other `.upl` files, async code, a code formatter (`fmt`), a language server
-(LSP), compilation to machine code (the LLVM prototype of v0.1 is kept in git history).
+Deliberately left for later: class inheritance, nameless functions with a block
+(`fun (x) { ... }`; one-expression lambdas exist), nested unpacking (`val (a, (b, c)) = ...`),
+the safe call `?.` and the `?:` operator, static type checking, async code, a code formatter
+(`fmt`), a language server (LSP), compilation to machine code (the LLVM prototype of v0.1 is kept
+in git history).

@@ -18,21 +18,28 @@ val question = "How do I check a backup?"
 print([m] => "Answer from the notes:\n{notes.context(question)}\n\nQuestion: {question}")
 ```
 
-> **Status: v0.2 is an early version.** The language is small and honest: everything the
+> **Status: v0.3 is an early version.** The language is small and honest: everything the
 > documentation describes works and is covered by tests, including the code examples in the
-> documentation itself. It is not a mature tool yet: there is no exception handling, no
-> anonymous functions and no importing of other `.upl` files, and the syntax may still change.
-> The full list is in ["Not in v0.2"](docs/spec.en.md#14-not-in-v02). The documentation is
-> written in Russian first; the specification and this README are also in English.
+> documentation itself. Version 0.3 grew out of using the language: we wrote neural-network
+> training, review labeling with a model, prompt comparison and log parsing in it, and added
+> what was missing ([what was inconvenient and what changed](docs/dogfood.md), in Russian).
+> What is still missing is listed in ["Not in v0.3"](docs/spec.en.md#14-not-in-v03). The
+> documentation is written in Russian first; the specification and this README are also in
+> English.
 
 ## What it is
 
 - **A language**: `fun`, `val`/`var`, `if`/`else if`, `while`, `for (i in 0..n)`, classes,
-  interpolated strings `"Hello, {name}"`, multi-line strings for prompts, clear errors in
-  Russian or English with line and column.
+  interpolated strings `"Hello, {name}"`, multi-line and raw (`r"\d+"`) strings, lambdas
+  `x => x * 2`, comprehensions `[x * x for x in xs if x > 0]`, `if (c) a else b`, tuples and
+  unpacking `val (lo, hi) = ...`, errors with `try`/`catch`/`finally`/`throw`, `with`,
+  `assert`, imports of your own files `import "helpers.upl"`, tests with `upsil test`, and
+  clear errors in Russian or English with line and column.
 - **AI resources in the language**: `llm m = llm.Model()` is a model, `[m] => "..."` asks it,
-  `-> json` turns the answer into data, `vector_store db = rag.VectorStore()` searches
-  documents, `model Net { ... }` is a PyTorch network.
+  `-> json(shape)` turns the answer into checked data (a wrong shape makes it ask again),
+  `m.ask_all([...])` asks many questions in parallel, `vector_store db = rag.VectorStore()`
+  searches documents, `model Net { ... }` is a PyTorch network, `nn.fit(...)` trains it with
+  validation and a progress line.
 - **A compiler to Python**: the whole program is checked before it runs (unknown names,
   reassigned `val`s, `break` outside a loop, wrong argument counts...), turned into a Python
   syntax tree and run; `upsil build` shows the resulting code. Any Python library can be used:
@@ -79,10 +86,7 @@ var total = 0
 for (item, price) in prices.items() {
     total += price
 }
-val squares = []
-for (i in 1..=5) {
-    squares.append(i * i)
-}
+val squares = [i * i for i in 1..=5]
 print("total {total}, squares {squares}, even {squares[1::2]}")
 ```
 ```output
@@ -129,6 +133,7 @@ Commands:
 ```sh
 upsil run hello.upl          # run (or simply: upsil hello.upl)
 upsil check hello.upl        # check without running
+upsil test                   # run the tests: fun test_...() in test_*.upl files
 upsil build hello.upl        # show the resulting Python
 upsil repl                   # interactive mode
 ```
@@ -143,7 +148,7 @@ val text = "UpsiL compiles to Python and works with local models."
 
 val summary = [m] => "Summarize in five words: {text}"
 val strict = [m, system: "Answer only yes or no"] => "Is Python a programming language?"
-val facts = [m] => "Return JSON \{\"language\": ..., \"goal\": ...\} for the text: {text}" -> json
+val facts = [m] => "Name the language and the goal: {text}" -> json({"language": str, "goal": str})
 
 print(summary, strict, facts["language"])
 for (piece in m.stream("Write a haiku about compilers")) {
@@ -152,11 +157,17 @@ for (piece in m.stream("Write a haiku about compilers")) {
 ```
 
 - `[m] => text` returns the model's answer as a string; `system:` sets its role; `-> json`
-  returns a dict or a list. Values inserted into a prompt with `{...}` are passed as text and
-  never executed.
+  returns a dict or a list, and `-> json(shape)` also checks it: when the model answers in the
+  wrong shape, it is told what is wrong and asked again; if that fails, `llm.FormatError` is
+  raised, which `catch` can handle. Values inserted into a prompt with `{...}` are passed as
+  text and never executed.
+- `m.ask_all(questions, schema = shape, errors = "null")` asks many questions in parallel and
+  does not stop because of one bad answer.
 - `rag.VectorStore()` searches by meaning if the server can compute embeddings; otherwise it
   says so and searches by words (BM25). The index is saved as JSON.
 - `model` becomes a `torch.nn.Module`; layers are fields, `forward` is a method.
+  `nn.fit(net, x, y, epochs = 60, val = (x_test, y_test))` trains it, `nn.accuracy` measures
+  it, and `with nn.no_grad() { ... }` computes without gradients.
 
 More in the [specification](docs/spec.en.md#9-ai-models-prompts-search).
 
@@ -186,18 +197,25 @@ All three grammars are generated from one keyword list by
 [tools/gen_syntax.py](tools/gen_syntax.py). Installation:
 
 ```sh
-cd vscode-upsil && npx @vscode/vsce package && code --install-extension upsil-lang-1.1.0.vsix
+cd vscode-upsil && npx @vscode/vsce package && code --install-extension upsil-lang-1.2.0.vsix
 mkdir -p ~/.local/share/gtksourceview-5/language-specs && cp editor/upsil.lang ~/.local/share/gtksourceview-5/language-specs/
 mkdir -p ~/.local/share/org.kde.syntax-highlighting/syntax && cp editor/upsil.xml ~/.local/share/org.kde.syntax-highlighting/syntax/
 ```
 
-## What is new in 0.2
+## What is new in 0.3
 
-Version 0.2 is a rewrite. Much of 0.1 was a facade: the "model" answered with canned phrases,
-search always returned the first document, a network layer returned a string, and the
-documentation and standard library were mostly generated repetition. All of that is gone; the
-LLVM prototype is kept in git history and may return as a separate backend. Details, including
-what changed in the syntax, are in [CHANGELOG.md](CHANGELOG.md).
+Version 0.3 was tested by use: four real programs were written in UpsiL (a PyTorch classifier,
+review labeling with a model, prompt comparison, questions about notes) and what got in the way
+was written down ([docs/dogfood.md](docs/dogfood.md), in Russian). One malformed model reply
+used to end a whole labeling run: now there are `try`/`catch`, answer shapes and a second try.
+`torch.no_grad()` could not be used: now there is `with`. Data columns were built with loops:
+now there are comprehensions. Sorting and prompt templates needed separate functions: now
+there are lambdas. The training loop was written by hand: now there is `nn.fit`. Plus tuples and
+unpacking, the `if` expression, raw strings for regular expressions, the `csv` and `re` modules,
+imports of your own files and `upsil test`. Details are in [CHANGELOG.md](CHANGELOG.md).
+
+Version 0.2 was a rewrite after an audit of 0.1, much of which was a facade; the LLVM prototype
+of 0.1 is kept in git history.
 
 ## Development
 
@@ -208,7 +226,9 @@ python3 -m upsil run examples/hello.upl     # run from a source checkout
 ```
 
 The tests use only the standard library; a small OpenAI-compatible server started by the tests
-stands in for the model.
+stands in for the model, and `tests/microtorch.py`, a small numpy autograd, stands in for
+PyTorch, so the example networks really train in the tests. To run a program with it:
+`python3 tests/run_microtorch.py examples/spirals.upl`.
 
 ## License
 

@@ -1,0 +1,31 @@
+// Какой промпт лучше? Один набор вопросов, несколько шаблонов, таблица результатов.
+// Модель в СОС: sos models serve. Запуск: upsil run examples/prompt_eval.upl
+import llm
+import time
+
+llm m = llm.Model(temperature = 0.0)
+
+val cases = [
+    ("Столица Франции?", "париж"),
+    ("Сколько будет 2 + 2?", "4"),
+    ("Какого цвета небо днём?", "голуб"),
+]
+
+// шаблоны — лямбды: вопрос подставляется при вызове
+val templates = {
+    "коротко": q => "Ответь одним словом: {q}",
+    "вежливо": q => "Пожалуйста, ответь кратко и точно: {q}",
+    "эрудит": q => "Ты — эрудит. {q} Ответ — одно слово.",
+}
+
+val scores = []
+for (name, make) in templates.items() {
+    val started = time.monotonic()
+    val answers = m.ask_all([make(q) for (q, _) in cases])
+    val hits = len([a for (a, c) in zip(answers, cases) if c[1] in a.lower()])
+    scores.append((name, hits, time.monotonic() - started))
+}
+
+for (name, hits, seconds) in sorted(scores, key = s => s[1], reverse = true) {
+    print("{name:<10} {hits}/{len(cases)}  {seconds:.1f} с")
+}

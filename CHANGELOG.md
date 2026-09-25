@@ -4,6 +4,63 @@ Notable changes to UpsiL. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Until 1.0, a minor version may change
 the language in incompatible ways; such changes are listed under **Changed**.
 
+## [0.3.0] - 2026-09-25
+
+UpsiL 0.3 comes from using the language. Four real programs were written in 0.2 (a PyTorch
+classifier, review labeling with a model, prompt comparison, questions about notes), and what got
+in the way was written down in [docs/dogfood.md](docs/dogfood.md). Every item there is addressed
+below. Everything 0.2 accepted still compiles, except programs that used the new keywords
+`catch` and `throw` as names.
+
+### Added
+
+- Errors: `try { } catch (e: Type) { } finally { }`, several `catch` clauses, `catch { }` without
+  a name, `throw value` (a message or an error object) and a bare `throw` inside `catch` that
+  re-throws. `Error` and the common Python error types are built in for `catch`; `llm.Error` and
+  `llm.FormatError` come with `llm`.
+- `with expression as name { }` for context managers, several at once, optionally in
+  parentheses: `with nn.no_grad() { ... }`.
+- Lambdas: `x => x * 2`, `(a, b) => a + b`, `() => 42`, `(s: str) => s.upper()`.
+- List and dict comprehensions with several `for` and `if` clauses, and generator arguments:
+  `sum(x * x for x in xs)`, `(x for x in xs)`.
+- The `if (condition) a else b` expression.
+- Tuples `(a, b)` / `(a,)`, `return a, b`, `val (a, b) = pair`, `var (x, y) = ...`,
+  `a, b = b, a`.
+- `assert condition, message`, which also runs under `python -O`; the message defaults to the
+  condition's source text.
+- Raw strings `r"..."` and `r"""..."""` (no escapes, no interpolation) for regular expressions and
+  paths.
+- `import "helpers.upl" as h` and `import helpers` (a `.upl` file next to the program): each file
+  runs once; a missing file is a compile error, a cycle a run-time error.
+- Answer shapes: `[m] => text -> json(shape)` and `m.ask(..., schema = shape)` check the reply
+  against `str int float bool list dict`, `[T]`, `["a", "b"]` or `{"key": T, "optional?": T}`,
+  send the shape as a JSON Schema to servers that constrain output, and when the reply does not
+  fit, tell the model what was wrong and ask again (`json_retries`, 1 by default); then
+  `llm.FormatError` with the reply in `e.reply`. Plain `-> json` retries the same way.
+- `m.ask_all(prompts, ..., workers = 4, errors = "raise" | "null")`: many questions in parallel,
+  answers in order.
+- `nn.fit` (a training loop with validation, a progress line and a history; Ctrl-C stops early),
+  `nn.batches`, `nn.evaluating`, `nn.accuracy`, `nn.auto_device`, `nn.count_params`.
+- Modules `csv` (`read`, `parse`, `write`, `stringify`) and `re` (`test`, `find`, `find_all`,
+  `groups`, `replace`, `split`, `escape`).
+- `upsil test`: runs `fun test_...()` in `test_*.upl` / `*_test.upl` files and reports each test
+  with the failing line.
+- Examples: spirals (training with `nn.fit`), reviews (shapes, `ask_all`, CSV), prompt_eval
+  (lambdas), logs (regular expressions, comprehensions, `try`/`catch`, unpacking; offline).
+- `tests/microtorch.py`, a small numpy autograd that stands in for PyTorch, so the neural
+  examples and `nn` helpers really train in the tests; `tests/run_microtorch.py` runs a program
+  with it.
+
+### Changed
+
+- `try`, `catch`, `finally`, `throw`, `with` and `assert` are keywords (`try`, `finally`, `with`
+  and `assert` were already reserved as Python keywords).
+- A model reply that is not the JSON asked for raises `llm.FormatError` (a kind of `llm.Error`)
+  after one retry, instead of failing at once.
+- `if cond print(x)` (a body without braces) now says that the body goes in `{ }` and that a value
+  by condition is `if (c) a else b`.
+- The VS Code extension is version 1.2.0 (new keywords, raw strings).
+
 ## [0.2.0] - 2026-09-25
 
 UpsiL 0.2 is a rewrite. An audit of 0.1 showed that the language worked only in part and that

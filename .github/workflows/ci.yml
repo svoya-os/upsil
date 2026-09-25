@@ -34,6 +34,11 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Unit tests (standard library only, no network, no PyTorch)
         run: python -m unittest discover -s tests -v
+      - name: Neural examples and nn helpers on microtorch (numpy stands in for PyTorch)
+        run: |
+          python -m pip install "numpy>=1.26,<3"
+          python -m unittest discover -s tests -p "test_runtime_v03.py" -v
+          python -m unittest discover -s tests -p "test_examples.py" -v
       - name: Editor grammars match upsil/keywords.py
         run: python tools/gen_syntax.py --check
       - name: Examples pass upsil check

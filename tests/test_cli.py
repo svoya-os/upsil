@@ -8,6 +8,8 @@ import unittest
 from mock_openai import free_port
 from support import UpsilTestCase, clean_env, run_cli
 
+from upsil import __version__
+
 FAIL = "fun main() {\n    val x = 0\n    print(\"before\")\n    print(1 / x)\n}\nmain()\n"
 BAD = "val a = 1\nprint(a + )\n"
 
@@ -212,7 +214,7 @@ class UsageTest(CliTestCase):
         self.assertIn("Usage:", r.stderr)
         r = run_cli(["version"])
         self.assertEqual(r.returncode, 0)
-        self.assertTrue(r.stdout.startswith("UpsiL 0.2.0 (Python "))
+        self.assertTrue(r.stdout.startswith(f"UpsiL {__version__} (Python "))
 
 
 if __name__ == "__main__":

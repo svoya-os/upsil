@@ -1,0 +1,26 @@
+// Разметка отзывов моделью: форма ответа, пачка запросов, итог в CSV.
+// Модель в СОС: sos models serve
+// Запуск: upsil run examples/reviews.upl examples/data/reviews.csv labeled.csv
+import llm
+import csv
+import sys
+
+val source = if (len(sys.args) > 0) sys.args[0] else "examples/data/reviews.csv"
+val target = if (len(sys.args) > 1) sys.args[1] else "reviews_labeled.csv"
+
+llm m = llm.Model(temperature = 0.0)
+
+// форма ответа: не тот JSON — модель переспросят, а не упадёт вся разметка
+val shape = {"label": ["pos", "neg", "neu"], "score": float}
+
+val rows = csv.read(source)
+val answers = m.ask_all(["Оцени тональность отзыва: {r["text"]}" for r in rows],
+                        schema = shape, errors = "null")
+
+val results = [{"text": r["text"], "label": a["label"], "score": a["score"]}
+               for (r, a) in zip(rows, answers) if a != null]
+csv.write(target, sorted(results, key = r => r["score"], reverse = true))
+
+val count = label => len([r for r in results if r["label"] == label])
+print("размечено {len(results)} из {len(rows)}, записано в {target}")
+print("позитивных {count("pos")}, негативных {count("neg")}, нейтральных {count("neu")}")

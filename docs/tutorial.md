@@ -136,6 +136,27 @@ print("10! = {factorial(10)}")
 вызове, поэтому `fun add(x, xs = [])` каждый раз получает новый пустой список.
 Компилятор проверяет вызовы: если забыть аргумент, программа даже не запустится (раздел 8).
 
+Функция может вернуть несколько значений — их удобно сразу разложить по переменным. А для
+коротких функций «на месте» есть лямбды: `x => x * 2`. Значение по условию записывается
+как `if (условие) a else b`:
+
+```upsil
+fun stats(xs) {
+    return min(xs), max(xs), sum(xs) / len(xs)
+}
+val (lo, hi, mean) = stats([3, 7, 5])
+print("от {lo} до {hi}, в среднем {mean}")
+
+val names = ["Вика", "Ян", "Александра"]
+print(sorted(names, key = n => len(n)))
+print(if (mean > 4) "выше четырёх" else "не выше четырёх")
+```
+```output
+от 3 до 7, в среднем 5.0
+["Ян", "Вика", "Александра"]
+выше четырёх
+```
+
 ## 6. Списки и словари
 
 Посчитаем, сколько раз встречается каждое слово:
@@ -162,6 +183,21 @@ print("всего слов: {len(text.split())}, разных: {len(counts)}")
 `val counts` нельзя присвоить заново, но менять содержимое словаря можно. У списков и
 словарей те же методы, что в Python: `append`, `pop`, `sort`, `get`, `keys`, `items`…
 Срезы: `xs[1:3]`, `xs[-1]`, `xs[::2]`.
+
+Новый список из старого удобно собирать генератором — `[что for x in откуда if условие]`,
+словарь — так же в фигурных скобках:
+
+```upsil
+val words = "мама мыла раму мама мыла пол".split()
+print([w.upper() for w in words if len(w) > 3])
+print({w: words.count(w) for w in ["мама", "пол"]})
+print(sum(len(w) for w in words))
+```
+```output
+["МАМА", "МЫЛА", "РАМУ", "МАМА", "МЫЛА"]
+{"мама": 2, "пол": 1}
+23
+```
 
 ## 7. Классы
 
@@ -231,6 +267,38 @@ KeyError: 'молоко' — в словаре нет такого ключа
 
 Язык сообщений берётся из `LANG`; английский можно включить так: `UPSIL_LANG=en upsil run ...`.
 Код выхода: 0 — всё хорошо, 1 — ошибка выполнения, 2 — ошибка компиляции.
+
+Ошибку можно поймать и продолжить работу: `try { ... } catch (e) { ... }`. Тип ошибки
+указывается после двоеточия, а свою ошибку бросает `throw`:
+
+```upsil
+fun price(item) {
+    val prices = {"хлеб": 50, "молоко": 90}
+    if not (item in prices) {
+        throw "нет цены для «{item}»"
+    }
+    return prices[item]
+}
+var total = 0
+for (item in ["хлеб", "икра", "молоко"]) {
+    try {
+        total += price(item)
+    } catch (e) {
+        print("пропускаю:", e)
+    }
+}
+print("итого {total}")
+try {
+    print(int("сто"))
+} catch (e: ValueError) {
+    print("это не число")
+}
+```
+```output
+пропускаю: нет цены для «икра»
+итого 140
+это не число
+```
 
 ## 9. Файлы и аргументы
 
@@ -302,6 +370,32 @@ print(mood)
 print(parsed["плюсы"], parsed["минусы"])
 ```
 
+Модели иногда отвечают не тем, что просили. Опишите форму ответа — `-> json(форма)` — и
+UpsiL проверит его: если что-то не так, объяснит модели ошибку и переспросит, а если и это
+не поможет, остановится с ошибкой `llm.FormatError`, которую можно поймать. `m.ask_all`
+задаёт много вопросов сразу и возвращает ответы в том же порядке:
+
+```upsil
+import llm
+
+llm m = llm.Model(temperature = 0.0)
+val shape = {"label": ["pos", "neg", "neu"], "score": float}
+try {
+    val one = [m] => "Оцени тональность: «Доставили быстро»" -> json(shape)
+    print(one["label"], one["score"])
+} catch (e: llm.FormatError) {
+    print("модель ответила не по форме:", e.reply)
+}
+val many = m.ask_all(["Оцени тональность: «{t}»" for t in ["Супер!", "Сломалось"]],
+                     schema = shape, errors = "null")
+print(many)
+```
+
+Форма — обычное значение: `str`, `int`, `float`, `bool`, список `[T]`, выбор из вариантов
+`["a", "b"]`, объект `{"поле": T}` (необязательное поле — `"поле?"`). Полная программа
+разметки отзывов с записью в CSV — [examples/reviews.upl](../examples/reviews.upl);
+сравнение нескольких промптов — [examples/prompt_eval.upl](../examples/prompt_eval.upl).
+
 Длинные ответы удобно печатать по мере генерации, а для диалога — хранить историю
 сообщений:
 
@@ -372,8 +466,32 @@ model TinyNet {
 ```
 
 `nn.X` — это `torch.nn.X`, `torch.nn.functional.X` или `torch.X`. Обучение сети на задаче
-XOR — [examples/neural_net.upl](../examples/neural_net.upl). Без PyTorch программа сообщит,
-как его установить.
+XOR шаг за шагом — [examples/neural_net.upl](../examples/neural_net.upl). Без PyTorch
+программа сообщит, как его установить.
+
+Обычный цикл обучения — эпохи, мини-пакеты, оптимизатор, проверка на отложенных данных —
+уже написан: `nn.fit`. Он печатает строку прогресса и возвращает историю, а `nn.accuracy`
+считает долю верных ответов:
+
+```upsil
+import nn
+
+val x = nn.randn(200, 2)
+val y = (x[:, 0] * x[:, 1] > 0).long()     // класс 1, если точка в I или III четверти
+model Quadrants {
+    val net = nn.Sequential(nn.Linear(2, 16), nn.ReLU(), nn.Linear(16, 2))
+    graph forward(x) { return net(x) }
+}
+val m = Quadrants()
+val history = nn.fit(m, x[:160], y[:160], epochs = 50, lr = 0.02, val = (x[160:], y[160:]), every = 25)
+print("точность: {nn.accuracy(m, x[160:], y[160:]):.0%}")
+with nn.no_grad() {
+    print(m(nn.tensor([[1.0, 1.0], [-1.0, 1.0]])).argmax(dim = 1))
+}
+```
+
+`with nn.no_grad() { ... }` считает без градиентов — так быстрее и экономнее по памяти,
+когда модель уже обучена. Пример с двумя спиралями — [examples/spirals.upl](../examples/spirals.upl).
 
 ## 13. Библиотеки Python
 
@@ -392,7 +510,27 @@ print(pathlib.Path("отчёт.pdf").suffix)
 .pdf
 ```
 
-## 14. Что под капотом
+## 14. Тесты
+
+Проверки пишутся в файлах `test_*.upl`: каждая функция `test_...` — отдельный тест, а
+`assert условие, "сообщение"` останавливает тест, если условие ложно. Код, который
+проверяют, подключается через `import "файл.upl"`:
+
+```text
+text.upl:
+fun shout(s) { return s.upper() + "!" }
+
+tests/test_text.upl:
+import "../text.upl"
+fun test_shout() {
+    assert text.shout("ай") == "АЙ!", "должно быть громко"
+}
+```
+
+`upsil test` найдёт такие файлы в текущей папке и подпапках, запустит тесты и покажет,
+какие не прошли и на какой строке.
+
+## 15. Что под капотом
 
 UpsiL превращает программу в Python. Посмотреть, во что именно:
 
@@ -403,10 +541,10 @@ upsil build hello.upl -o hello.py   # в файл
 
 Получается обычный читаемый Python; для запуска ему нужен установленный пакет `upsil`.
 
-## 15. Подсветка в редакторах
+## 16. Подсветка в редакторах
 
 - **VS Code**: папка `vscode-upsil` — расширение; собрать и поставить:
-  `cd vscode-upsil && npx @vscode/vsce package && code --install-extension upsil-lang-1.1.0.vsix`.
+  `cd vscode-upsil && npx @vscode/vsce package && code --install-extension upsil-lang-1.2.0.vsix`.
 - **GNOME Text Editor, gedit**:
   `mkdir -p ~/.local/share/gtksourceview-5/language-specs && cp editor/upsil.lang ~/.local/share/gtksourceview-5/language-specs/`
   (для gedit до версии 41 — папка `gtksourceview-4`).

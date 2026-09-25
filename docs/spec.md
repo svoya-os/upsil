@@ -1,8 +1,8 @@
-# Спецификация языка UpsiL 0.2
+# Спецификация языка UpsiL 0.3
 
 [English version](spec.en.md) · [Учебник](tutorial.md) · [README](../README.md)
 
-> **Статус: v0.2 — ранняя версия.** Здесь описано только то, что реализовано и проверяется
+> **Статус: v0.3 — ранняя версия.** Здесь описано только то, что реализовано и проверяется
 > тестами (`python3 -m unittest discover -s tests`). Примеры кода в этом документе тоже
 > проверяются: каждый блок компилируется, а вывод совпадает с показанным. Если поведение
 > `upsil` расходится с текстом, это ошибка — сообщите о ней.
@@ -22,7 +22,7 @@
 11. [Встроенные функции](#11-встроенные-функции)
 12. [Модули](#12-модули)
 13. [Компиляция, запуск и ошибки](#13-компиляция-запуск-и-ошибки)
-14. [Чего нет в v0.2](#14-чего-нет-в-v02)
+14. [Чего нет в v0.3](#14-чего-нет-в-v03)
 
 ## 1. Обзор
 
@@ -116,8 +116,8 @@ print(x)
 
 - ключевые слова UpsiL (2.4);
 - ключевые слова Python, которые не являются ключевыми словами UpsiL:
-  `False None True assert async await def del elif except finally from global is lambda
-  nonlocal pass raise try with yield` — программа компилируется в Python;
+  `False None True async await def del elif except from global is lambda nonlocal pass raise
+  yield` — программа компилируется в Python;
 - `self` и `super` (их нельзя объявить);
 - имена, начинающиеся с `_upsil` (служебные имена компилятора).
 
@@ -127,6 +127,7 @@ print(x)
 
 ```text
 if else while for return break continue
+try catch finally throw with assert
 fun val var class import as
 and or not in
 true false null
@@ -212,6 +213,18 @@ print(prompt("..."))
   Текст: "..."
 ```
 
+**Сырые строки** `r"..."` и `r"""..."""` берут текст как есть: обратная косая черта и
+фигурные скобки в них — обычные символы, escape-последовательностей и интерполяции нет.
+Удобно для регулярных выражений и путей Windows. Внутри `r"..."` не может быть `"`, внутри
+`r"""..."""` — `"""`; многострочная сырая строка не выравнивается.
+
+```upsil
+print(r"\d{4}-\d{2}", r"C:\Users\max", len(r"\n"))
+```
+```output
+\d{4}-\d{2} C:\Users\max 2
+```
+
 ### 2.7. Операторы и знаки
 
 ```text
@@ -234,17 +247,20 @@ print(prompt("..."))
 program       = { separator } { statement { separator } } ;
 separator     = NEWLINE | ";" ;
 
-statement     = var_decl | resource_decl | fun_decl | class_decl | model_decl
-              | if_stmt | while_stmt | for_stmt
-              | "return" [ expression ] | "break" | "continue"
+statement     = var_decl | destruct_decl | resource_decl | fun_decl | class_decl | model_decl
+              | if_stmt | while_stmt | for_stmt | try_stmt | with_stmt
+              | "return" [ values ] | "break" | "continue"
+              | "throw" [ expression ] | "assert" expression [ "," expression ]
               | import_stmt | assignment | expression ;
-(* Простые инструкции (все, кроме fun, class, model, if, while, for) должны заканчиваться
-   separator, "}" или концом файла. *)
+(* Простые инструкции (все, кроме fun, class, model, if, while, for, try, with) должны
+   заканчиваться separator, "}" или концом файла. *)
+values        = expression { "," expression } ;             (* два и больше — кортеж *)
 
 block         = "{" { separator } { statement { separator } } "}" ;
 
 var_decl      = ( "val" | "var" ) NAME [ ":" type ] [ "=" expression ] ;
               (* у val значение обязательно, кроме полей класса *)
+destruct_decl = ( "val" | "var" ) "(" NAME { "," NAME } [ "," ] ")" "=" values ;
 resource_decl = ( "llm" | "vector_store" ) NAME [ "=" expression ] ;
 type          = NAME { "." NAME } [ "[" type { "," type } "]" ] [ "?" ] ;
 
@@ -261,11 +277,18 @@ while_stmt    = "while" expression block ;
 for_stmt      = "for" "(" loop_target "in" expression ")" block
               | "for" loop_target "in" expression block ;
 loop_target   = NAME { "," NAME } | "(" NAME { "," NAME } ")" ;
+try_stmt      = "try" block { catch_clause } [ "finally" block ] ;   (* хотя бы один catch или finally *)
+catch_clause  = "catch" [ "(" NAME [ ":" NAME { "." NAME } ] ")" ] block ;
+with_stmt     = "with" ( with_items | "(" with_items ")" ) block ;
+with_items    = expression [ "as" NAME ] { "," expression [ "as" NAME ] } ;
 
 import_stmt   = "import" NAME [ "." NAME ] [ "as" NAME ]
-              | "import" "py" STRING [ "as" NAME ] ;
+              | "import" "py" STRING [ "as" NAME ]
+              | "import" STRING [ "as" NAME ] ;                     (* другой файл .upl *)
 
-assignment    = target ( "=" | "+=" | "-=" | "*=" | "/=" | "%=" ) expression ;
+assignment    = targets "=" values
+              | target ( "+=" | "-=" | "*=" | "/=" | "%=" ) expression ;
+targets       = target { "," target } | "(" target { "," target } ")" ;
 target        = NAME | postfix "." NAME | postfix "[" subscripts "]" ;
 
 expression    = or_expr ;
@@ -285,11 +308,26 @@ argument      = [ NAME "=" ] expression ;                     (* именова�
 subscripts    = subscript { "," subscript } [ "," ] ;
 subscript     = expression | [ expression ] ":" [ expression ] [ ":" [ expression ] ] ;
 primary       = NUMBER | STRING | "true" | "false" | "null" | NAME
-              | "(" expression ")" | list | dict | prompt ;
+              | "(" expression ")" | tuple | list | dict | prompt
+              | if_expr | lambda | list_comp | dict_comp | gen_expr ;
+tuple         = "(" expression "," [ expression { "," expression } [ "," ] ] ")" ;
 list          = "[" [ expression { "," expression } [ "," ] ] "]" ;
 dict          = "{" [ expression ":" expression { "," expression ":" expression } [ "," ] ] "}" ;
-prompt        = "[" expression [ "," "system" ":" expression ] "]" "=>" expression [ "->" "json" ] ;
+prompt        = "[" expression [ "," "system" ":" expression ] "]" "=>" expression
+                [ "->" "json" [ "(" expression ")" ] ] ;
+if_expr       = "if" "(" expression ")" expression "else" expression ;
+lambda        = ( NAME | "(" [ NAME [ ":" type ] { "," NAME [ ":" type ] } ] ")" ) "=>" expression ;
+list_comp     = "[" expression comp_for { comp_for } "]" ;
+dict_comp     = "{" expression ":" expression comp_for { comp_for } "}" ;
+gen_expr      = "(" expression comp_for { comp_for } ")" ;
+              (* единственным аргументом вызова — без своих скобок: sum(x for x in xs) *)
+comp_for      = "for" ( loop_target "in" expression | "(" loop_target "in" expression ")" )
+                { "if" expression } ;
 ```
+
+`if`-выражение и лямбда захватывают всё выражение справа: `if (c) 1 else 2 + 3` — это
+`if (c) 1 else (2 + 3)`, а `x => x + 1` возвращает `x + 1`. Чтобы использовать их внутри
+большего выражения, возьмите их в скобки.
 
 Правое выражение промпта (после `=>`) — полное выражение: `[m] => "a" + b` отправляет
 модели `"a" + b`. Чтобы использовать ответ внутри большего выражения, возьмите промпт в
@@ -423,6 +461,88 @@ print(sorted([3, 1, 2], reverse = true), ", ".join(["a", "b"]))
 UpsiL — `Имя(поле=значение, ...)`. Остальные объекты (например, тензоры) показываются так,
 как их показывает Python.
 
+### 4.10. Кортежи
+
+Кортеж — неизменяемая последовательность: `(1, "два")`, кортеж из одного значения — `(7,)`.
+Функция может вернуть несколько значений через запятую — это кортеж: `return lo, hi`. Скобки
+без запятой — просто группировка: `(1 + 2) * 3`.
+
+```upsil
+fun min_max(xs) {
+    return min(xs), max(xs)
+}
+val pair = min_max([4, 2, 9])
+print(pair, pair[0], (7,), len((1, 2, 3)))
+```
+```output
+(2, 9) 2 (7,) 3
+```
+
+### 4.11. Условное выражение `if`
+
+`if (условие) a else b` — значение `a`, если условие истинно, иначе `b`. Условие пишется в
+скобках, ветка `else` обязательна; значения могут начинаться на следующей строке. Цепочка —
+`if (a) x else if (b) y else z`.
+
+```upsil
+fun sign(n) {
+    return if (n > 0) "+" else if (n < 0) "-" else "0"
+}
+val label = if (len([1, 2, 3]) > 2)
+    "много"
+    else "мало"
+print(sign(5), sign(-2), sign(0), label)
+```
+```output
++ - 0 много
+```
+
+### 4.12. Лямбды
+
+Лямбда — короткая безымянная функция из одного выражения: `x => x * 2`, `(a, b) => a + b`,
+`() => 42`. Параметрам можно указать типы: `(s: str) => s.upper()`. Лямбда видит
+переменные вокруг себя (как вложенная функция); её параметры изменять нельзя. Для
+нескольких инструкций объявите обычную функцию `fun`.
+
+```upsil
+val double = x => x * 2
+val words = ["банан", "яблоко", "киви"]
+print(double(21), sorted(words, key = w => len(w)))
+print(list(map(n => n * n, 1..=4)), list(filter(n => n % 2 == 0, 0..6)))
+val templates = {"коротко": q => "Ответь одним словом: {q}"}
+print(templates["коротко"]("столица Франции?"))
+```
+```output
+42 ["киви", "банан", "яблоко"]
+[1, 4, 9, 16] [0, 2, 4]
+Ответь одним словом: столица Франции?
+```
+
+### 4.13. Генераторы списков и словарей
+
+`[выражение for x in xs if условие]` строит список, `{ключ: значение for ...}` — словарь.
+Цикл пишется в любой из двух форм `for` (со скобками и без), можно разложить пару и
+перечислить несколько циклов и условий подряд. Переменные генератора видны только внутри
+него.
+
+Без квадратных скобок, единственным аргументом функции, генератор отдаёт значения по одному,
+не собирая список: `sum(x * x for x in xs)`. В других местах такой генератор берут в
+круглые скобки: `(x for x in xs)`.
+
+```upsil
+val xs = [3, 1, 4, 1, 5]
+print([x * x for x in xs if x > 1])
+print({w: len(w) for w in ["аб", "в"]})
+print([a * b for a in 1..=2 for b in 1..=3])
+print(sum(x for x in xs), [(i, c) for (i, c) in enumerate("аб")])
+```
+```output
+[9, 16, 25]
+{"аб": 2, "в": 1}
+[1, 2, 3, 2, 4, 6]
+14 [(0, "а"), (1, "б")]
+```
+
 ## 5. Инструкции
 
 ### 5.1. `val` и `var`
@@ -514,6 +634,148 @@ b=2
 функции) возвращает `null`. `return` вне функции — ошибка компиляции. Выражение должно
 начинаться на той же строке, что и `return`.
 
+### 5.8. Распаковка
+
+`val (a, b) = пара` объявляет сразу несколько переменных из последовательности (кортежа,
+списка, строки); `var (x, y) = ...` — изменяемые. Число имён должно совпадать с числом
+значений. Изменяемым переменным можно присвоить несколько значений сразу: `a, b = b, a`.
+
+```upsil
+val (name, age) = ("Аня", 30)
+var (a, b) = 1, 2
+a, b = b, a
+print(name, age, a, b)
+```
+```output
+Аня 30 2 1
+```
+
+### 5.9. Ошибки: `try`, `catch`, `finally`, `throw`
+
+`throw значение` останавливает выполнение с ошибкой. Значение — текст сообщения или объект
+ошибки: `throw "нет файла"`, `throw ValueError("плохое число")`.
+
+`try { ... } catch (e) { ... }` перехватывает ошибку, случившуюся в блоке `try`, и
+выполняет блок `catch`; в `e` — пойманная ошибка (`"{e}"` — её текст). Можно указать тип
+и написать несколько `catch` подряд — сработает первый подходящий: `catch (e: ValueError)`,
+`catch (e: llm.FormatError)`. `catch (e)` и `catch (e: Error)` ловят любую ошибку
+программы (но не Ctrl-C и не `sys.exit`); `catch { ... }` без скобок — то же без имени.
+Блок `finally { ... }` выполняется всегда: и после успеха, и после ошибки. После `try`
+нужен хотя бы один `catch` или `finally`.
+
+Внутри `catch` можно написать `throw` без значения — пойманная ошибка полетит дальше.
+Пойманную ошибку нельзя изменить, а видна она только в своём блоке `catch`.
+
+```upsil
+fun parse_age(text) {
+    val n = int(text)
+    if n < 0 {
+        throw "возраст не может быть отрицательным: {n}"
+    }
+    return n
+}
+for (text in ["30", "abc", "-5"]) {
+    try {
+        print("возраст:", parse_age(text))
+    } catch (e: ValueError) {
+        print("не число:", text)
+    } catch (e) {
+        print("ошибка:", e)
+    } finally {
+        print("проверили", text)
+    }
+}
+```
+```output
+возраст: 30
+проверили 30
+не число: abc
+проверили abc
+ошибка: возраст не может быть отрицательным: -5
+проверили -5
+```
+
+Ошибка, которую никто не поймал, останавливает программу:
+
+```upsil
+fun check(n) {
+    if n < 0 { throw "отрицательное число: {n}" }
+    return n
+}
+check(-5)
+```
+```output
+Ошибка выполнения (последний вызов — внизу):
+  example.upl:5, в <программа>
+    check(-5)
+  example.upl:2, в check
+    if n < 0 { throw "отрицательное число: {n}" }
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ошибка: отрицательное число: -5
+```
+
+```upsil-error
+throw
+```
+```output
+example.upl:1:1: ошибка: 'throw' без значения повторно бросает пойманную ошибку и допустим только внутри catch { }; иначе пишите throw "что случилось"
+  1 | throw
+    | ^^^^^
+```
+
+### 5.10. `with`
+
+`with выражение as имя { ... }` выполняет блок внутри контекста — объекта, который
+подготавливает что-то перед блоком и убирает после, даже если в блоке случилась ошибка.
+Так работают `nn.no_grad()` (вычисления без градиентов), `nn.evaluating(net)` и объекты
+Python с методами `__enter__`/`__exit__`. `as имя` необязательно; несколько контекстов
+перечисляются через запятую, весь список можно взять в скобки. Имя из `as` видно только в
+блоке, изменять его нельзя.
+
+```upsil
+class Step {
+    val name: str
+    fun __enter__() {
+        print("начало:", name)
+        return self
+    }
+    fun __exit__(kind, value, trace) {
+        print("конец:", name)
+        return false
+    }
+}
+with Step("загрузка") as s, Step("разбор") {
+    print("работаем:", s.name)
+}
+```
+```output
+начало: загрузка
+начало: разбор
+работаем: загрузка
+конец: разбор
+конец: загрузка
+```
+
+### 5.11. `assert`
+
+`assert условие` проверяет условие и, если оно ложно, останавливает программу с ошибкой
+«проверка не прошла: условие»; `assert условие, сообщение` — со своим сообщением. Ошибку
+ловит `catch (e: AssertionError)`. Проверки работают всегда (даже под `python -O`) и
+удобны в тестах (`upsil test`, раздел 13.2).
+
+```upsil
+val scores = [0.9, 0.7]
+assert len(scores) == 2
+try {
+    assert min(scores) > 0.8, "есть слабые ответы: {min(scores)}"
+} catch (e: AssertionError) {
+    print(e)
+}
+```
+```output
+есть слабые ответы: 0.7
+```
+
 ## 6. Функции
 
 ```upsil
@@ -573,6 +835,8 @@ print(c(), c())
   объявлять одинаковые имена.
 - Встроенные функции (раздел 11) можно перекрыть своими объявлениями.
 - `class` и `model` объявляются только на верхнем уровне, `import` — тоже.
+- Пойманная ошибка `catch (e)`, имя из `with ... as x`, переменные генераторов и параметры
+  лямбд видны только в своём блоке или выражении и не изменяются.
 
 Компилятор находит эти ошибки до запуска и сообщает обо всех сразу:
 
@@ -747,6 +1011,10 @@ print(short, terse, data["name"])
   только JSON, а если сервер поддерживает `response_format`, он тоже используется. Ответ
   разбирается (обрамление ```json и лишний текст вокруг допускаются) и возвращается как
   словарь или список; если это не JSON — ошибка выполнения.
+- `-> json(форма)` описывает, какой JSON нужен, и проверяет ответ (раздел 9.5).
+- Если ответ — не тот JSON, модели объясняют, что не так, и спрашивают ещё раз
+  (`json_retries` раз, по умолчанию 1); не помогло — ошибка `llm.FormatError`, которую можно
+  поймать: `catch (e: llm.FormatError)`, текст ответа — в `e.reply`.
 - `m` может быть любым объектом с методом `ask(text, system, json)`, например своим классом.
 - Интерполяция в тексте промпта вставляет данные как текст: содержимое переменных не
   выполняется и не интерпретируется как шаблон.
@@ -798,6 +1066,44 @@ PyTorch. PyTorch загружается при первом обращении; 
 `pip install torch` или `uv tool install 'upsil[nn]'`. Полный пример —
 [examples/neural_net.upl](../examples/neural_net.upl).
 
+### 9.5. Форма ответа и пачки запросов
+
+Форма — обычное значение UpsiL, которое описывает нужный JSON:
+
+| Форма | Что должно прийти |
+|---|---|
+| `str`, `int`, `float`, `bool` | строка, целое число, число (целое тоже подходит), true/false |
+| `list`, `dict` | любой список, любой объект |
+| `[T]` | список, каждый элемент которого подходит под `T` |
+| `["a", "b", "c"]` | одно из перечисленных значений |
+| `{"ключ": T, "заметка?": T}` | объект с этими полями; `?` в конце — поле необязательно |
+| `null` | null |
+
+`[m] => текст -> json(форма)` и `m.ask(текст, schema = форма)` добавляют форму к
+системному промпту, а серверу, который умеет ограничивать вывод (llama.cpp, OpenAI),
+передают её как JSON Schema. Ответ проверяется; числа приводятся, если это ничего не
+теряет (`3.0` для `int` становится `3`); лишние поля остаются.
+
+`m.ask_all(список_вопросов, ...)` задаёт много вопросов сразу (`workers` параллельно, по
+умолчанию 4) и возвращает ответы в том же порядке. Параметры те же, что у `ask`
+(`system`, `json`, `schema`…); `errors = "null"` ставит `null` вместо ответа, который не
+удалось получить, и продолжает, вместо того чтобы остановиться на первой ошибке.
+
+```upsil
+import llm
+
+llm m = llm.Model(temperature = 0.0)
+val shape = {"label": ["pos", "neg", "neu"], "score": float}
+val reviews = ["Отличный ноутбук", "Экран сломался через неделю"]
+val answers = m.ask_all(["Оцени тональность отзыва: {r}" for r in reviews], schema = shape,
+                        errors = "null")
+for (text, a) in zip(reviews, answers) {
+    if a != null {
+        print("{a["label"]} {a["score"]:.1f}  {text}")
+    }
+}
+```
+
 ## 10. Импорт
 
 ```upsil
@@ -808,10 +1114,18 @@ import py "os.path"              // даёт имя os
 ```
 
 Модули UpsiL: `llm`, `rag`, `nn`, `fs`, `http`, `json`, `ui`, `sys`, `math`, `time`,
-`random` (раздел 12). `import x.y as z` связывает `z` с `x.y`; глубже одного уровня
+`random`, `csv`, `re` (раздел 12). `import x.y as z` связывает `z` с `x.y`; глубже одного уровня
 импортировать нельзя. `import py "имя"` подключает любой модуль Python (без `as` имя
 связывается с первой частью пути, как в Python). Импорт допускается только на верхнем
-уровне файла. Импорта других файлов `.upl` в v0.2 нет; модуль Python, лежащий рядом со
+уровне файла.
+
+**Другие файлы UpsiL.** `import "helpers.upl" as h` выполняет файл `helpers.upl` (путь
+считается от папки программы) и связывает имя `h` с его верхним уровнем: функции, классы и
+переменные файла становятся атрибутами `h.shout(...)`. Без `as` имя берётся из имени файла:
+`import "lib/data.upl"` даёт `data`. Короткая запись `import helpers` находит `helpers.upl`
+рядом с программой, если так не называется модуль UpsiL. Каждый файл выполняется один раз,
+сколько бы раз его ни импортировали; если файл не найден, это ошибка компиляции; циклический
+импорт (`a.upl` → `b.upl` → `a.upl`) — ошибка выполнения. Модуль Python, лежащий рядом со
 скриптом, подключается через `import py`.
 
 ## 11. Встроенные функции
@@ -826,6 +1140,11 @@ import py "os.path"              // даёт имя os
 | `div(a, b)` | целочисленное деление с округлением вниз |
 | `error(message)` | останавливает программу с ошибкой `message` |
 | `int float bool len range list dict set tuple min max sum abs round sorted reversed enumerate zip map filter any all chr ord format isinstance divmod pow iter next hash` | как в Python |
+
+Типы ошибок для `catch (e: ...)` и `throw`: `Error` (любая ошибка программы), `ValueError`,
+`TypeError`, `KeyError`, `IndexError`, `ZeroDivisionError`, `FileNotFoundError`,
+`TimeoutError`, `RuntimeError`, `AssertionError`; у модулей свои: `llm.Error`,
+`llm.FormatError`.
 
 Остальные функции Python (`open`, `eval`, `getattr`…) встроенными в UpsiL не являются;
 при необходимости их можно получить через `import py "builtins"`.
@@ -842,13 +1161,59 @@ temperature = null, max_tokens = null)` — ответ на один вопро�
 `url`. Функции `llm.models()`, `llm.default_url()`. Пока сервер загружает модель (HTTP 503),
 запрос повторяется в пределах `timeout`.
 
+Модели 0.3: `llm.Model(..., json_retries = 1)`; у `ask` и `chat` параметр `schema` (9.5);
+`ask_all(prompts, system = null, json = false, schema = null, workers = 4, errors = "raise")`.
+Ошибки: `llm.Error` (любая ошибка модели), `llm.FormatError` (ответ — не тот JSON; поле
+`reply`).
+
 **rag** — хранилище документов (9.3).
 `rag.VectorStore(model = null, backend = "auto", url = null, chunk_size = 1000)`; методы
 `add(text, meta = null)` (возвращает `id`), `add_dir(path, glob = "*.md")` (возвращает число
 фрагментов), `search(query, k = 3)`, `context(query, k = 3)` (тексты найденного одной строкой
 для промпта), `save(path)`; `rag.VectorStore.load(path)`; `len(db)`; поле `backend`.
 
-**nn** — PyTorch (9.4).
+**nn** — PyTorch (9.4) и помощники UpsiL:
+
+- `nn.fit(model, x, y, epochs = 10, lr = 0.001, batch = 32, loss = null, optimizer = null,
+  val = null, every = 1, device = null, shuffle = true, quiet = false)` — обучает модель и
+  возвращает историю: список словарей `{"epoch", "loss", "val_loss", "val_accuracy"}`.
+  По умолчанию Adam с `lr`; функция потерь — перекрёстная энтропия, если в `y` номера
+  классов, и MSE, если числа (для вероятностей 0/1 передайте
+  `loss = nn.binary_cross_entropy`). `val = (x_val, y_val)` добавляет проверку на отложенных
+  данных. Каждые `every` эпох печатается строка «эпоха 20/60 · loss 0.2928 · val 0.2654 ·
+  точность 92.5%». Ctrl-C останавливает обучение досрочно, выученное сохраняется. После
+  обучения модель в режиме оценки.
+- `nn.batches(x, y, ..., size = 32, shuffle = false, drop_last = false)` — мини-пакеты
+  тензоров одной длины: `for ((xb, yb) in nn.batches(x, y, size = 64, shuffle = true))`.
+- `nn.evaluating(model)` — контекст для `with`: режим оценки и без градиентов внутри,
+  прежний режим после.
+- `nn.accuracy(model, x, y)` — доля верных ответов классификатора (0.0–1.0).
+- `nn.auto_device()` — `"cuda"`, `"mps"` или `"cpu"`; `nn.count_params(model)` — сколько
+  чисел учит модель.
+
+Пример — [examples/spirals.upl](../examples/spirals.upl).
+
+**csv** — таблицы: `read(path, sep = ",", header = true, numbers = false)` — строки файла:
+словари по первой строке (или списки с `header = false`); `numbers = true` превращает числа
+из текста в числа. `parse(text, ...)` — то же из строки. `write(path, rows, columns = null,
+sep = ",")` пишет список словарей (столбцы — по ключам) или списков и возвращает число строк;
+`stringify(rows, ...)` — то же в строку.
+
+**re** — регулярные выражения (шаблоны удобно писать сырыми строками `r"..."`):
+`test(pattern, text)` — есть ли совпадение; `find` — первое совпадение или `null`;
+`find_all` — все совпадения (с одной группой `( )` — её текст, с несколькими — списки);
+`groups` — группы первого совпадения или `null`; `replace(pattern, replacement, text)` —
+замена на текст (`\1` — группа) или на результат функции от найденного;
+`split(pattern, text)`; `escape(text)`. У всех — `ignore_case = true`.
+
+```upsil
+import re
+val log = "10:02 WARN gpu 83C; 10:03 ERROR data"
+print(re.find_all(r"(WARN|ERROR) (\w+)", log), re.replace(r"\d+C", t => "{int(t[:-1]) + 1}C", log))
+```
+```output
+[["WARN", "gpu"], ["ERROR", "data"]] 10:02 WARN gpu 84C; 10:03 ERROR data
+```
 
 **fs** — файлы (текст в UTF-8): `read(path)`, `write(path, text)`, `append(path, text)`,
 `lines(path)`, `exists(path)`, `is_file(path)`, `is_dir(path)`,
@@ -898,6 +1263,7 @@ default = null)`, `exit(code = 0)`, `platform`, `version` (версия UpsiL).
 | `upsil run -` | читает программу из стандартного ввода |
 | `upsil build ФАЙЛ [-o ВЫХОД]` | печатает сгенерированный Python или пишет его в `ВЫХОД` (никогда — рядом с исходником сам по себе и никогда поверх него) |
 | `upsil check ФАЙЛ...` | ищет ошибки без запуска, включая несовпадения типов литералов |
+| `upsil test [ПУТЬ...]` | запускает тесты: функции `fun test_...()` в файлах `test_*.upl` и `*_test.upl` (в указанных папках или в текущей, с подпапками) |
 | `upsil repl` | интерактивный режим |
 | `upsil version`, `upsil help` | версия и справка |
 
@@ -905,6 +1271,20 @@ default = null)`, `exit(code = 0)`, `platform`, `version` (версия UpsiL).
 
 Коды выхода: `0` — успех, `1` — ошибка выполнения, `2` — ошибка компиляции, `64` — неверный
 вызов (нет файла, неизвестная команда). `sys.exit(n)` завершает программу с кодом `n`.
+
+`upsil test` сначала выполняет верхний уровень файла с тестами (импорты, объявления), затем
+каждую функцию `test_...` в порядке файла. Тест прошёл, если функция завершилась; не прошёл,
+если сработал `assert` или случилась ошибка — тогда показывается сообщение и строка:
+
+```text
+tests/test_text.upl
+  ✓ test_words
+  ✗ test_shout — лишний восклицательный знак  (tests/test_text.upl:6)
+2 теста: 1 прошёл, 1 не прошёл (0.01 с)
+```
+
+Код выхода `upsil test`: `0` — все прошли, `1` — есть непрошедшие, `2` — ошибка компиляции
+в файле с тестами, `64` — тестов не нашлось.
 
 ### 13.3. Сообщения об ошибках
 
@@ -947,10 +1327,10 @@ ZeroDivisionError: division by zero — деление на ноль
 кавычках). Ввод продолжается, пока не закрыта скобка или строка кончается оператором;
 пустая строка завершает ввод. Имена можно объявлять заново. Выход — Ctrl-D или `:q`.
 
-## 14. Чего нет в v0.2
+## 14. Чего нет в v0.3
 
-Сознательно оставлено на потом: обработка исключений (`try`/`catch`), анонимные функции,
-`if` как выражение, литералы кортежей и распаковка при присваивании, наследование классов,
-статическая проверка типов, импорт других файлов `.upl`, асинхронность, форматирование кода
-(`fmt`), языковой сервер (LSP), компиляция в машинный код (прототип на LLVM из v0.1 сохранён
-в истории git).
+Сознательно оставлено на потом: наследование классов, безымянные функции с блоком
+(`fun (x) { ... }`; есть лямбды из одного выражения), вложенная распаковка
+(`val (a, (b, c)) = ...`), безопасный вызов `?.` и оператор `?:`, статическая проверка
+типов, асинхронность, форматирование кода (`fmt`), языковой сервер (LSP), компиляция в
+машинный код (прототип на LLVM из v0.1 сохранён в истории git).

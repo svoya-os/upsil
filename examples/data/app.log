@@ -1,0 +1,7 @@
+2026-09-24 10:01:12 INFO  train: epoch 1 loss=0.912
+2026-09-24 10:01:40 INFO  train: epoch 2 loss=0.534
+2026-09-24 10:02:03 WARN  gpu: temperature 83C
+2026-09-24 10:02:31 INFO  train: epoch 3 loss=0.301
+2026-09-24 10:02:59 ERROR data: bad row 1777
+2026-09-24 10:03:25 INFO  train: epoch 4 loss=0.oops
+2026-09-24 10:03:52 INFO  train: epoch 5 loss=0.188

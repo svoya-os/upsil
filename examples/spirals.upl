@@ -1,0 +1,42 @@
+// Нейросеть различает две спирали: данные, обучение с проверкой, точность.
+// Нужен PyTorch: pip install torch (или uv tool install 'upsil[nn]')
+// Запуск: upsil run examples/spirals.upl
+import nn
+import math
+import random
+
+nn.manual_seed(42)
+random.seed(42)
+
+// точка на спирали: k от 0 до 1, класс 0 или 1, немного шума
+fun point(k: float, label: int) {
+    val r = k * 5.0
+    val t = 3.5 * math.pi * k + label * math.pi
+    return [r * math.sin(t) + random.uniform(-0.1, 0.1), r * math.cos(t) + random.uniform(-0.1, 0.1), label]
+}
+
+val data = [point(i / 200, label) for label in 0..2 for i in 0..200]
+random.shuffle(data)
+val split = div(len(data) * 8, 10)
+val (train, test) = data[:split], data[split:]
+
+fun features(rows) { return nn.tensor([[p[0], p[1]] for p in rows]) }
+fun labels(rows) { return nn.tensor([p[2] for p in rows]) }
+
+model Classifier {
+    val hidden: int
+    val layers = nn.Sequential(
+        nn.Linear(2, hidden), nn.ReLU(),
+        nn.Linear(hidden, hidden), nn.ReLU(),
+        nn.Linear(hidden, 2))
+
+    graph forward(x) {
+        return layers(x)
+    }
+}
+
+val net = Classifier(32)
+print("параметров: {nn.count_params(net)}, устройство: {nn.auto_device()}")
+nn.fit(net, features(train), labels(train), epochs = 60, lr = 0.01, batch = 32,
+       val = (features(test), labels(test)), every = 20)
+print("точность на отложенных точках: {nn.accuracy(net, features(test), labels(test)):.0%}")

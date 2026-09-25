@@ -18,6 +18,7 @@ from upsil.compiler import check_source, compile_source
 
 GOLDEN = ROOT / "tests" / "golden"
 HAS_TORCH = importlib.util.find_spec("torch") is not None
+HAS_NUMPY = importlib.util.find_spec("numpy") is not None
 
 
 class ExamplesTest(UpsilTestCase):
@@ -29,11 +30,32 @@ class ExamplesTest(UpsilTestCase):
                 check_source(path.read_text(encoding="utf-8"), str(path), lint_types=True)
 
     def test_golden_outputs(self):
-        for name in ("hello", "fib", "collections"):
+        for name in ("hello", "fib", "collections", "logs"):
             with self.subTest(example=name):
                 r = run_cli(["run", f"examples/{name}.upl"])
                 self.assertEqual(r.returncode, 0, r.stderr)
                 self.assertEqual(r.stdout, (GOLDEN / f"{name}.out").read_text(encoding="utf-8"))
+
+
+def run_cli_script(args, extra_env=None):
+    import subprocess
+    import sys
+    from support import clean_env
+    return subprocess.run([sys.executable, *args], capture_output=True, text=True, encoding="utf-8",
+                          env=clean_env(extra_env), cwd=str(ROOT), timeout=600)
+
+
+def review_reply(body):
+    """Sentiment by keywords, like a small model; the second review gets prose once."""
+    text = body["messages"][-1]["content"]
+    if "Ужасная" in text and len(body["messages"]) == 2:
+        return "Хм, это скорее негатив."
+    if "Оцени тональность" not in text and "JSON" in text:
+        return json.dumps({"label": "neg", "score": 0.9})
+    for words, label, score in ((("Отличный", "Супер"), "pos", 0.9), (("Ужасная", "сломался"), "neg", 0.8)):
+        if any(w in text for w in words):
+            return json.dumps({"label": label, "score": score})
+    return json.dumps({"label": "neu", "score": 0.5})
 
 
 class AIExamplesTest(UpsilTestCase):
@@ -77,6 +99,36 @@ class AIExamplesTest(UpsilTestCase):
             r = self.run_example(mock, ["examples/rag_notes.upl"], stdin="чабрец\n\n")
             self.assertEqual(r.returncode, 0, r.stderr)
             self.assertIn("[recipes/tea.md]", r.stdout)
+
+    def test_reviews(self):
+        import tempfile
+        with MockOpenAI(reply=review_reply) as mock, tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "labeled.csv")
+            r = self.run_example(mock, ["examples/reviews.upl", "examples/data/reviews.csv", out])
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertEqual(r.stdout, f"размечено 6 из 6, записано в {out}\n"
+                                       "позитивных 2, негативных 2, нейтральных 2\n")
+            with open(out, encoding="utf-8") as f:
+                rows = f.read().splitlines()
+            self.assertEqual(rows[0], "text,label,score")
+            self.assertTrue(rows[1].endswith(",pos,0.9"), rows)          # sorted by score
+            shapes = [q["body"].get("response_format", {}).get("type") for q in mock.chat_requests()]
+            self.assertEqual(set(shapes), {"json_schema"})
+            self.assertEqual(len(shapes), 7)                               # one answer was asked again
+
+    def test_prompt_eval(self):
+        def reply(body):
+            text = body["messages"][-1]["content"]
+            if "Франции" in text:
+                return "Париж"
+            if "2 + 2" in text:
+                return "4" if "эрудит" not in text else "четыре"
+            return "Голубое" if "кратко" in text else "синее"
+        with MockOpenAI(reply=reply) as mock:
+            r = self.run_example(mock, ["examples/prompt_eval.upl"])
+            self.assertEqual(r.returncode, 0, r.stderr)
+            lines = [re.sub(r"\d+\.\d с$", "N с", line) for line in r.stdout.splitlines()]
+            self.assertEqual(lines, ["вежливо    3/3  N с", "коротко    2/3  N с", "эрудит     1/3  N с"])
 
     def test_summarize(self):
         def reply(body):
@@ -124,6 +176,15 @@ class AIExamplesTest(UpsilTestCase):
         self.assertEqual(len(answers), 4, r.stdout)
         for a, b, p in answers:
             self.assertEqual(round(float(p)), int(a) ^ int(b), r.stdout)
+
+    @unittest.skipUnless(HAS_NUMPY, "microtorch needs numpy (CI installs it)")
+    def test_neural_examples_on_microtorch(self):
+        # tests/microtorch.py stands in for PyTorch: the examples really train
+        for name, check in (("neural_net", r"^1 XOR 0 ≈ 1\.00$"), ("spirals", r"^точность на отложенных точках: 100%$")):
+            with self.subTest(example=name):
+                r = run_cli_script(["tests/run_microtorch.py", f"examples/{name}.upl"])
+                self.assertEqual(r.returncode, 0, r.stderr)
+                self.assertRegex(r.stdout, re.compile(check, re.M))
 
     def test_neural_net_without_torch(self):
         if HAS_TORCH:

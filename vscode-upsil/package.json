@@ -2,7 +2,7 @@
   "name": "upsil-lang",
   "displayName": "UpsiL",
   "description": "Syntax highlighting for UpsiL (.upl), a small language for AI scripts that compiles to Python",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "svoya-os",
   "license": "Apache-2.0",
   "repository": {

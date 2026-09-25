@@ -1,0 +1,39 @@
+// Разбор журнала обучения: регулярные выражения, генераторы списков,
+// распаковка, лямбды и обработка ошибок. Работает без сети.
+// Запуск: upsil run examples/logs.upl examples/data/app.log
+import fs
+import re
+import sys
+
+val path = if (len(sys.args) > 0) sys.args[0] else "examples/data/app.log"
+val lines = fs.lines(path)
+
+// уровень — второе слово после даты и времени
+val levels = [re.find(r"INFO|WARN|ERROR", line) for line in lines]
+val counts = {level: levels.count(level) for level in ["INFO", "WARN", "ERROR"]}
+print("строк: {len(lines)}, " + ", ".join(["{k} {v}" for (k, v) in counts.items()]))
+
+// эпохи и loss; кривое число не роняет разбор
+val losses = []
+for line in lines {
+    val found = re.groups(r"epoch (\d+) loss=(\S+)", line)
+    if found == null { continue }
+    val (epoch, value) = found
+    try {
+        losses.append((int(epoch), float(value)))
+    } catch (e: ValueError) {
+        print("пропускаю эпоху {epoch}: «{value}» — не число")
+    }
+}
+
+val (best_epoch, best) = min(losses, key = pair => pair[1])
+print("лучшая эпоха {best_epoch}: loss {best}")
+val values = [loss for (_, loss) in losses]
+val falling = all(b < a for (a, b) in zip(values, values[1:]))
+print(if (falling) "loss только падает" else "loss где-то рос")
+for line in lines {
+    if re.test(r"ERROR|WARN", line) {
+        val (_, clock) = line.split(" ")[:2]
+        print("внимание в {clock}: {line.split(": ", 1)[1]}")
+    }
+}

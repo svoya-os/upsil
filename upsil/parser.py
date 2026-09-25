@@ -703,6 +703,7 @@ class Parser:
         self.advance()
         cond = self.expression()
         self.expect_op(")")
+        self.skip_newlines()          # the value may start on the next line, like in Kotlin
         then = self.expression()
         j = self._next_significant()
         if not (self.toks[j].kind == "KW" and self.toks[j].value == "else"):

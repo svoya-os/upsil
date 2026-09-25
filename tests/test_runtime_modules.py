@@ -10,6 +10,8 @@ from fake_modules import fake_tkinter, modules
 from mock_openai import MockOpenAI, free_port
 from support import UpsilTestCase, env, lang, run_upl
 
+from upsil import __version__
+
 from upsil.errors import UpsilError
 from upsil.runtime import fs, http, json, random, ui
 from upsil.runtime import sys as usys
@@ -55,7 +57,7 @@ class SysTest(UpsilTestCase):
         try:
             with env(UPSIL_TEST_VAR="42"):
                 self.assertRuns('import sys\nprint(sys.args, sys.script, sys.env("UPSIL_TEST_VAR"), sys.env("NOPE", "d"), '
-                                'sys.version)', '["a", "b"] tool.upl 42 d 0.2.0\n')
+                                'sys.version)', f'["a", "b"] tool.upl 42 d {__version__}\n')
         finally:
             sys.argv = saved
         with self.assertRaises(SystemExit) as cm:
