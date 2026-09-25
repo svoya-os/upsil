@@ -1,0 +1,32 @@
+// Краткий пересказ текстового файла и ключевые слова в JSON.
+// Запуск: upsil run examples/summarize.upl ФАЙЛ [ЧИСЛО_ПУНКТОВ]
+// Пример: upsil run examples/summarize.upl examples/sample.txt 3
+import fs
+import llm
+import sys
+
+if len(sys.args) == 0 {
+    print("Использование: upsil run summarize.upl ФАЙЛ [ЧИСЛО_ПУНКТОВ]")
+    sys.exit(64)
+}
+val path = sys.args[0]
+var points = 5
+if len(sys.args) > 1 {
+    points = int(sys.args[1])
+}
+
+// длинный текст не поместится в контекст небольшой модели: берём начало
+val text = fs.read(path)[:12000]
+print("Файл: {path}, символов: {len(text)}")
+
+llm m = llm.Model()
+val summary = [m, system: "Ты пишешь краткие и точные пересказы на русском языке."] => """
+    Перескажи текст в {points} пунктах, по одному предложению в каждом.
+
+    Текст:
+    {text}
+    """
+print(summary)
+
+val info = [m] => "Назови три ключевых слова текста. Формат ответа: \{\"keywords\": [...]\}\n\n{text}" -> json
+print("Ключевые слова: {", ".join(info.get("keywords", []))}")

@@ -1,0 +1,47 @@
+// Вопросы к своим заметкам: поиск по папке с .md и ответ модели по найденному.
+// Запуск: upsil run examples/rag_notes.upl [ПАПКА] ["ВОПРОС"]
+// Без аргументов берётся папка notes рядом с этим файлом, а вопросы читаются с клавиатуры.
+import fs
+import llm
+import rag
+import sys
+
+var folder = fs.join(fs.dirname(sys.script), "notes")
+if len(sys.args) > 0 {
+    folder = sys.args[0]
+}
+
+vector_store db = rag.VectorStore()
+val chunks = db.add_dir(folder, glob = "*.md")
+print("Фрагментов в индексе: {chunks} (папка {folder}, поиск: {db.backend})")
+
+llm m = llm.Model()
+
+fun answer(question: str) -> str {
+    val hits = db.search(question, k = 3)
+    if len(hits) == 0 {
+        return "В заметках ничего не нашлось."
+    }
+    var context = ""
+    for (hit in hits) {
+        context += "[{hit.meta["source"]}]\n{hit.text}\n\n"
+    }
+    return [m, system: "Отвечай только по заметкам. Указывай источник в квадратных скобках."] => """
+        Заметки:
+        {context}
+        Вопрос: {question}
+        """
+}
+
+if len(sys.args) > 1 {
+    print(answer(sys.args[1]))
+} else {
+    while true {
+        val question = input("Вопрос (пустая строка — выход): ")
+        if question == null or question == "" {
+            break
+        }
+        print(answer(question))
+        print()
+    }
+}

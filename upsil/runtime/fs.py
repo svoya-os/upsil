@@ -14,7 +14,7 @@ from pathlib import Path as _Path
 from typing import List
 
 __all__ = ["read", "write", "append", "lines", "exists", "is_file", "is_dir", "list", "mkdir", "remove",
-           "join", "home", "cwd"]
+           "join", "dirname", "basename", "home", "cwd"]
 
 
 def read(path: str) -> str:
@@ -68,6 +68,16 @@ def remove(path: str) -> None:
 
 def join(*parts: str) -> str:
     return _os.path.join(*[_builtins.str(p) for p in parts])
+
+
+def dirname(path: str) -> str:
+    """The folder part of a path: ``fs.dirname("a/b.md") == "a"``."""
+    return _os.path.dirname(str(path))
+
+
+def basename(path: str) -> str:
+    """The last part of a path: ``fs.basename("a/b.md") == "b.md"``."""
+    return _os.path.basename(str(path))
 
 
 def home() -> str:

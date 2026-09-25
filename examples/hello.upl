@@ -1,0 +1,17 @@
+// Первая программа на UpsiL: переменные, функции, строки и цикл.
+// Запуск: upsil run examples/hello.upl
+
+val name = "UpsiL"          // val нельзя изменить
+var greeting = "Привет"     // var — можно
+
+fun greet(who: str, punct = "!") -> str {
+    return "{greeting}, {who}{punct}"
+}
+
+print(greet(name))
+greeting = "Здравствуй"
+print(greet("мир", punct = "?"))
+
+for (i in 1..=3) {
+    print("{i} × {i} = {i * i}")
+}

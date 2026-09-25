@@ -1,0 +1,40 @@
+// Нейросеть в блоке model: учим XOR на PyTorch.
+// Нужен PyTorch: pip install torch (или uv tool install 'upsil[nn]')
+// Запуск: upsil run examples/neural_net.upl
+import nn
+
+nn.manual_seed(0)
+
+model XorNet {
+    val hidden: int
+    val l1 = nn.Linear(2, hidden)
+    val act = nn.Tanh()
+    val l2 = nn.Linear(hidden, 1)
+    val out = nn.Sigmoid()
+
+    graph forward(x) {
+        return out(l2(act(l1(x))))
+    }
+}
+
+val net = XorNet(8)
+val xs = nn.tensor([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+val ys = nn.tensor([[0.0], [1.0], [1.0], [0.0]])
+val opt = nn.optim.Adam(net.parameters(), lr = 0.05)
+
+for (epoch in 1..=500) {
+    opt.zero_grad()
+    val loss = nn.binary_cross_entropy(net(xs), ys)
+    loss.backward()
+    opt.step()
+    if epoch % 100 == 0 {
+        print("эпоха {epoch}: loss = {loss.item():.4f}")
+    }
+}
+
+val predictions = net(xs).detach()
+for (i in 0..4) {
+    val a = int(xs[i][0].item())
+    val b = int(xs[i][1].item())
+    print("{a} XOR {b} ≈ {predictions[i][0].item():.2f}")
+}

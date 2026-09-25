@@ -29,9 +29,10 @@ class FsTest(UpsilTestCase):
                              'true ["# Title", "line 2"] true true true\n'
                              '["a.md", "c.txt", "sub"] ["a.md", "sub/b.md"]\nfalse\n')
 
-    def test_home_and_cwd(self):
+    def test_paths(self):
         self.assertEqual(fs.home(), os.path.expanduser("~"))
         self.assertEqual(fs.cwd(), os.getcwd())
+        self.assertEqual((fs.dirname("a/b.md"), fs.basename("a/b.md"), fs.dirname("b.md")), ("a", "b.md", ""))
 
 
 class JsonTest(UpsilTestCase):

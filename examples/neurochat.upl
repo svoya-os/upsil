@@ -1,0 +1,21 @@
+// Окно чата с локальной моделью (tkinter).
+// Нужны графический сеанс и python3-tk; модель в СОС: sos models serve
+// Запуск: upsil run examples/neurochat.upl
+import llm
+import ui
+
+val window = ui.Window("UpsiL NeuroChat", 640, 720)
+llm m = llm.Model()
+val history = [{"role": "system", "content": "Ты дружелюбный помощник. Отвечай кратко."}]
+
+// вызывается в фоновом потоке, поэтому окно не зависает, пока модель думает
+fun on_message(text: str) {
+    history.append({"role": "user", "content": text})
+    val reply = m.chat(history)
+    history.append({"role": "assistant", "content": reply})
+    window.add_message("Модель: {reply}")
+}
+
+window.on_submit(on_message)
+window.add_message("Напишите сообщение и нажмите Enter.")
+window.show()

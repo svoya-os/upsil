@@ -1,0 +1,43 @@
+// Числа Фибоначчи тремя способами: рекурсия, цикл и запоминание.
+// Запуск: upsil run examples/fib.upl
+
+fun fib(n: int) -> int {
+    if n < 2 {
+        return n
+    }
+    return fib(n - 1) + fib(n - 2)
+}
+
+fun fib_loop(n: int) -> int {
+    var a = 0
+    var b = 1
+    for (i in 0..n) {
+        val following = a + b
+        a = b
+        b = following
+    }
+    return a
+}
+
+val memo = {0: 0, 1: 1}
+
+fun fib_memo(n: int) -> int {
+    if n not in memo {
+        memo[n] = fib_memo(n - 1) + fib_memo(n - 2)
+    }
+    return memo[n]
+}
+
+val first = []
+for (i in 0..10) {
+    first.append(fib(i))
+}
+print("первые десять: {first}")
+print("fib(90) = {fib_loop(90)}")
+print("цикл и запоминание согласны: {fib_loop(90) == fib_memo(90)}")
+
+var n = 0
+while fib_loop(n) < 1000 {
+    n += 1
+}
+print("первое число не меньше 1000: fib({n}) = {fib_loop(n)}")

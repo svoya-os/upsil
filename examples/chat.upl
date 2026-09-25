@@ -1,0 +1,23 @@
+// Чат с локальной моделью в терминале; ответ печатается по мере генерации.
+// В СОС модель запускается командой: sos models serve
+// Другой сервер: UPSIL_LLM_URL=http://host:8000/v1 upsil run examples/chat.upl
+import llm
+
+llm m = llm.Model()
+val history = [{"role": "system", "content": "Ты дружелюбный помощник. Отвечай кратко и по делу."}]
+
+print("Чат с моделью. Пустая строка или Ctrl-D — выход.")
+while true {
+    val line = input("> ")
+    if line == null or line == "" {
+        break
+    }
+    history.append({"role": "user", "content": line})
+    var reply = ""
+    for (piece in m.stream(history)) {
+        print(piece, end = "")
+        reply += piece
+    }
+    print()
+    history.append({"role": "assistant", "content": reply})
+}

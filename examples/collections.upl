@@ -1,0 +1,46 @@
+// Списки, словари, срезы, форматирование и небольшой класс.
+// Запуск: upsil run examples/collections.upl
+
+val fruits = ["яблоко", "груша", "слива", "вишня"]
+print(fruits[0], fruits[-1], fruits[1:3])
+print("всего: {len(fruits)}, по алфавиту: {sorted(fruits)}")
+
+val prices = {"яблоко": 90, "груша": 120}
+prices["слива"] = 150
+prices["яблоко"] += 10
+for (fruit, price) in prices.items() {
+    print("{fruit:<8} {price:>4} ₽")
+}
+
+val cheap = []
+for fruit in fruits {
+    if fruit in prices and prices[fruit] < 130 {
+        cheap.append(fruit)
+    }
+}
+print("дешевле 130 ₽: {cheap}")
+
+class Basket {
+    val owner: str
+    var items = []
+
+    fun add(item, count = 1) {
+        for (i in 0..count) {
+            items.append(item)
+        }
+        return self
+    }
+
+    fun total() {
+        var result = 0
+        for (item in items) {
+            result += prices.get(item, 0)
+        }
+        return result
+    }
+}
+
+val basket = Basket("Макс")
+basket.add("яблоко", count = 2).add("груша")
+print(basket)
+print("итого: {basket.total()} ₽")
