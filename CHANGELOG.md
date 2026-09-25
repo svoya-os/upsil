@@ -4,6 +4,13 @@ Notable changes to UpsiL. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Until 1.0, a minor version may change
 the language in incompatible ways; such changes are listed under **Changed**.
 
+## [0.4.1] - 2026-09-25
+
+### Added
+
+- `upsil zen`: the Zen of UpsiL, eleven lines on how the language wants to be used (in Russian
+  with `LANG=ru_*`). It is not in `upsil help`; SOS shows it when you type «дзен» in the launcher.
+
 ## [0.4.0] - 2026-09-25
 
 Decisions: typed answers with probabilities instead of text. A model is often needed to choose

@@ -65,6 +65,38 @@ HELP_RU = f"""UpsiL {__version__}: небольшой язык для ИИ-ск�
 """
 
 
+# `upsil zen`: not in the help, like any good easter egg.
+ZEN_EN = """The Zen of UpsiL
+
+Clear is better than clever.
+Make it work, then make it fly.
+val until you need var.
+An error at check time beats an error at the user's.
+Don't coax the model: ask it, then check.
+A probability is an answer too.
+When the model is unsure, ask a person.
+A prompt is code: it has tests.
+The test you have beats the perfect one you don't.
+The Python it makes can be read, so it can be trusted.
+Every program starts with "Hello".
+"""
+
+ZEN_RU = """Дзен UpsiL
+
+Понятное лучше хитрого.
+Сначала пусть работает, потом пусть летает.
+val, пока не понадобится var.
+Ошибка при проверке лучше ошибки у пользователя.
+Модель не уговаривают: её спрашивают и проверяют.
+Вероятность — тоже ответ.
+Не уверена модель — спроси человека.
+Промпт — это код: у него есть тесты.
+Тест, который есть, лучше идеального, которого нет.
+Получившийся Python можно прочитать, поэтому ему можно верить.
+Любая программа начинается с «Привет».
+"""
+
+
 def _help() -> str:
     return tr(HELP_EN, HELP_RU)
 
@@ -274,6 +306,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     if cmd == "test":
         from .testing import main as run_tests
         return run_tests(rest)
+    if cmd == "zen":
+        sys.stdout.write(tr(ZEN_EN, ZEN_RU))
+        return EXIT_OK
     if cmd == "repl":
         from .repl import run_repl
         return run_repl()

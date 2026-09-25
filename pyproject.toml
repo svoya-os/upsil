@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "upsil"
-version = "0.4.0"
+version = "0.4.1"
 description = "A small Kotlin-like language for AI scripts (local LLMs, RAG, PyTorch) that compiles to readable Python"
 readme = "README.md"
 requires-python = ">=3.10"

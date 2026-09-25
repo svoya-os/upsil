@@ -216,6 +216,15 @@ class UsageTest(CliTestCase):
         self.assertEqual(r.returncode, 0)
         self.assertTrue(r.stdout.startswith(f"UpsiL {__version__} (Python "))
 
+    def test_zen(self):
+        r = run_cli(["zen"])
+        self.assertEqual(r.returncode, 0)
+        self.assertTrue(r.stdout.startswith("The Zen of UpsiL\n"))
+        self.assertIn("A probability is an answer too.", r.stdout)
+        r = run_cli(["zen"], extra_env={"LANG": "ru_RU.UTF-8"})
+        self.assertIn("Вероятность — тоже ответ.", r.stdout)
+        self.assertNotIn("zen", run_cli(["help"]).stdout)                 # an easter egg stays hidden
+
 
 if __name__ == "__main__":
     unittest.main()
