@@ -25,6 +25,7 @@ Usage:
   upsil FILE.upl [ARGS...]    the same
   upsil build FILE [-o OUT]   print the generated Python (or write it to OUT)
   upsil check FILE...         look for errors without running (also obvious type mismatches)
+  upsil test [PATH...]        run the tests: fun test_...() in test_*.upl / *_test.upl files
   upsil repl                  interactive mode
   upsil version               print the version
   upsil help                  this help
@@ -47,6 +48,7 @@ HELP_RU = f"""UpsiL {__version__}: небольшой язык для ИИ-ск�
   upsil ФАЙЛ.upl [АРГУМЕНТЫ...]   то же самое
   upsil build ФАЙЛ [-o ВЫХОД]     показать получившийся Python (или записать в ВЫХОД)
   upsil check ФАЙЛ...             найти ошибки без запуска (и явные несовпадения типов)
+  upsil test [ПУТЬ...]            запустить тесты: fun test_...() в файлах test_*.upl / *_test.upl
   upsil repl                      интерактивный режим
   upsil version                   версия
   upsil help                      эта справка
@@ -269,6 +271,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         return cmd_build(rest)
     if cmd == "check":
         return cmd_check(rest)
+    if cmd == "test":
+        from .testing import main as run_tests
+        return run_tests(rest)
     if cmd == "repl":
         from .repl import run_repl
         return run_repl()
