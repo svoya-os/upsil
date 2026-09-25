@@ -1,15 +1,30 @@
 {
   "name": "upsil-lang",
-  "displayName": "UpsiL Language Support",
-  "description": "Official support for UpsiL (.upl) - The ultimate AI Systems Language",
-  "version": "1.0.3",
-  "publisher": "upsil-corp",
+  "displayName": "UpsiL",
+  "description": "Syntax highlighting for UpsiL (.upl), a small language for AI scripts that compiles to Python",
+  "version": "1.1.0",
+  "publisher": "svoya-os",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/svoya-os/upsil"
+  },
+  "homepage": "https://github.com/svoya-os/upsil",
+  "bugs": {
+    "url": "https://github.com/svoya-os/upsil/issues"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
     "Programming Languages",
     "Themes"
+  ],
+  "keywords": [
+    "upsil",
+    "upl",
+    "llm",
+    "rag"
   ],
   "icon": "upsil-logo-v3.png",
   "contributes": {
@@ -32,8 +47,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./upsil-logo.png",
-          "dark": "./upsil-logo.png"
+          "light": "./upsil-logo-v3.png",
+          "dark": "./upsil-logo-v3.png"
         }
       }
     ],
