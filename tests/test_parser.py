@@ -225,7 +225,7 @@ class ErrorsTest(UpsilTestCase):
             ("print(1) print(2)", "expected the end of the statement", 1, 10),
             ("[a, b] => \"x\"", "a prompt takes exactly one model", 1, 1),
             ("[m, temp: 1] => \"x\"", "unknown prompt option 'temp'", 1, 5),
-            ("[m] => \"x\" -> yaml", "only '-> json' is supported", 1, 15),
+            ("[m] => \"x\" -> yaml", "after a prompt: '-> json', '-> choice([...])'", 1, 15),
             ("[m, system: 1]", "only allowed in a prompt", 1, 5),
             ("f() = 1", "cannot assign to this expression", 1, 1),
             ("fun (a) {}", "expected a function name", 1, 5),

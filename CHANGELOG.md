@@ -4,6 +4,43 @@ Notable changes to UpsiL. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Until 1.0, a minor version may change
 the language in incompatible ways; such changes are listed under **Changed**.
 
+## [0.4.0] - 2026-09-25
+
+Decisions: typed answers with probabilities instead of text. A model is often needed to choose
+(which team answers a ticket, is this spam, how annoyed is the customer), and asking for JSON
+gives no idea of how sure it is. The idea is the one behind Jev (TypeSafe AI); here it runs on
+the local model server that SOS already has, with no second model and no cloud.
+
+### Added
+
+- `[m] => text -> choice(options)`, `-> yes` and `-> score(levels)`. The options are labelled
+  A, B, C…, the model takes one step, and the probabilities of the letters come from the
+  server's `logprobs` (llama.cpp, vLLM, OpenAI): one pass over the text, no generation.
+  `-> choice` and `-> score` return an `llm.Decision` (`value`, `p`, `probs`, and `mean` for a
+  scale); a decision equals its value (`team == "tech"`) and shows as `tech (93%)`. `-> yes`
+  returns the probability of yes. Options are a list or a dict with descriptions; levels are a
+  range such as `0..=3` or words from the lowest to the highest.
+- `m.choice`, `m.yes`, `m.score`, and `m.decide(state, questions)` for several questions about
+  one text, built with `llm.Yes`, `llm.Choice` and `llm.Score`. The text comes first, so
+  llama.cpp's prompt cache reuses it, and the questions are asked in parallel.
+- `llm.SystemOne(...)`: the same questions on a server that speaks `/v1/systemone`, such as
+  Jev (key in `TYPESAFE_API_KEY`) or an open compatible server; `decide` sends one request,
+  and 429/503/529 answers are retried with backoff. It makes decisions only; a plain prompt to
+  it is an error that says so.
+- Honest failures instead of made-up numbers: a server without `logprobs` is an `llm.Error`,
+  and a model that does not answer with an option letter (say, it starts to reason) is an
+  `llm.FormatError`. Local servers are asked for no reasoning block
+  (`chat_template_kwargs: {"enable_thinking": false}`); a server that refuses the field is not
+  sent it again.
+- Compile-time checks of literal options: 2 to 26 options, 2 to 10 levels, no repeats.
+- `examples/triage.upl` (support tickets: act when the model is sure, else a human), section
+  9.6 of the specification, a tutorial section, and the decisions in the assistant skill.
+
+### Changed
+
+- After a prompt, `->` accepts `json`, `choice`, `yes` and `score`, and the error names all
+  four. `choice`, `yes` and `score` stay ordinary names everywhere else.
+
 ## [0.3.0] - 2026-09-25
 
 UpsiL 0.3 comes from using the language. Four real programs were written in 0.2 (a PyTorch

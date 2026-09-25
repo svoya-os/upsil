@@ -1,0 +1,41 @@
+// Разбор обращений в поддержку: решения вместо текста.
+// Модель выбирает отдел, оценивает срочность и тон, а программа действует сама,
+// только когда модель уверена; остальное отдаёт человеку.
+// Модель в СОС: sos models serve
+// Запуск: upsil run examples/triage.upl examples/data/tickets.csv
+import llm
+import csv
+import sys
+
+val source = if (len(sys.args) > 0) sys.args[0] else "examples/data/tickets.csv"
+llm m = llm.Model()
+
+// варианты с описаниями: модель выбирает по смыслу, а не по одному слову
+val teams = {
+    "billing": "оплата, счета, возврат денег",
+    "tech": "ошибки, вход в аккаунт, сбои",
+    "sales": "цены, тарифы, покупка",
+}
+// три вопроса об одном тексте: ответы приходят вероятностями
+val questions = {
+    "team": llm.Choice("Какой отдел должен ответить?", teams),
+    "urgent": llm.Yes("Нужно ответить сегодня?"),
+    "tone": llm.Score("Насколько клиент раздражён?", ["спокоен", "недоволен", "зол"]),
+}
+
+val sure = 0.8
+val for_human = []
+for (row in csv.read(source)) {
+    val r = m.decide(row.text, questions)
+    if r.team.p >= sure {
+        val when = if (r.urgent >= sure) "сегодня" else "в порядке очереди"
+        print("{r.team} · {when} · клиент {r.tone.value}")     // r.team показывается как «tech (93%)»
+        print("  {row.text}")
+    } else {
+        for_human.append(row.text)
+    }
+}
+print("человеку: {len(for_human)}")
+for (text in for_human) {
+    print("  ? {text}")
+}

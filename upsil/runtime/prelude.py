@@ -267,6 +267,11 @@ def prompt(model: object, text: object, *, system: object = None, json: bool = F
     """``[model] => text``, ``[model, system: s] => text -> json`` and ``... -> json(schema)``."""
     ask = getattr(model, "ask", None)
     if ask is None or not callable(ask):
+        if callable(getattr(model, "choice", None)):       # llm.SystemOne: decisions only
+            raise UpsilError("[m] => ...: this model only makes decisions and writes no text: "
+                             "add -> choice([...]), -> yes or -> score([...])",
+                             "[m] => ...: эта модель только принимает решения и не пишет текст: "
+                             "добавьте -> choice([...]), -> yes или -> score([...])")
         name = type_name(model)
         raise UpsilError(f"[m] => ...: m must be an llm model (llm.Model(...)), not {name}",
                          f"[m] => ...: m должна быть моделью (llm.Model(...)), а не {name}")
@@ -276,15 +281,30 @@ def prompt(model: object, text: object, *, system: object = None, json: bool = F
     return ask(show(text), system=system_text, json=json)
 
 
+def decide(model: object, text: object, kind: _builtins.str, options: object = None, *,
+           system: object = None) -> object:
+    """``[model] => text -> choice(options)`` / ``-> yes`` / ``-> score(levels)``."""
+    method = getattr(model, kind, None)
+    if method is None or not callable(method):
+        name = type_name(model)
+        raise UpsilError(f"[m] => ... -> {kind}: m must be llm.Model(...) or llm.SystemOne(...), not {name}",
+                         f"[m] => ... -> {kind}: m должна быть llm.Model(...) или llm.SystemOne(...), а не {name}")
+    system_text = None if system is None else show(system)
+    if kind == "yes":
+        return method(show(text), system=system_text)
+    return method(show(text), options, system=system_text)
+
+
 def llm_resource(name: _builtins.str, value: object = MISSING) -> object:
     """``llm m`` / ``llm m = expr``: a default model, or a checked value."""
     if value is MISSING:
         from . import llm as _llm
         return _llm.Model()
-    if not callable(getattr(value, "ask", None)):
+    if not (callable(getattr(value, "ask", None)) or callable(getattr(value, "choice", None))):
         kind = type_name(value)
-        raise UpsilError(f"llm {name}: expected an llm model (llm.Model(...)), got {kind}",
-                         f"llm {name}: ожидалась модель (llm.Model(...)), а получено значение типа {kind}")
+        raise UpsilError(f"llm {name}: expected an llm model (llm.Model(...) or llm.SystemOne(...)), got {kind}",
+                         f"llm {name}: ожидалась модель (llm.Model(...) или llm.SystemOne(...)), "
+                         f"а получено значение типа {kind}")
     return value
 
 

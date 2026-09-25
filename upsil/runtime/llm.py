@@ -5,6 +5,7 @@
     llm m = llm.Model("qwen3.5-4b")
     print([m] => "Say hi")                  // the prompt operator calls m.ask
     for (piece in m.stream("Tell a story")) { print(piece, end = "") }
+    val team = [m] => "Who handles: {t}" -> choice(["billing", "tech"])   // a decision: m.choice
 
 Where the server is (first match wins):
 
@@ -31,10 +32,13 @@ import urllib.parse
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from ..errors import UpsilError
+from . import _decide
 from . import config as _config
+from ._decide import Choice, Decision, Question, Score, Yes
 from ._net import HttpError, NetError, is_loopback, open_url, read_all
 
-__all__ = ["Model", "LLMError", "Error", "FormatError", "models", "default_url"]
+__all__ = ["Model", "SystemOne", "LLMError", "Error", "FormatError", "models", "default_url",
+           "Yes", "Choice", "Score", "Decision"]
 
 DEFAULT_URL = "http://127.0.0.1:8080/v1"
 DEFAULT_TIMEOUT = 120.0
@@ -336,6 +340,7 @@ class Model:
         self.system = system
         self._json_mode = True          # send response_format until the server refuses it
         self._schema_mode = True        # … and with a JSON Schema, until the server refuses that
+        self._thinking_off = True       # ask local servers for no <think> in decisions, until refused
 
     # ------------------------------------------------------------------ info
     @property
@@ -458,6 +463,44 @@ class Model:
                     bar.step(done[0], tr(f"answers {done[0]}/{len(items)}", f"ответов {done[0]}/{len(items)}"))
         with ThreadPoolExecutor(max_workers=max(1, int(workers))) as pool:
             return list(pool.map(counted, items))
+
+    # ------------------------------------------------------------------ decisions
+    def choice(self, prompt: Any, options: Any, *, system: Optional[str] = None) -> Decision:
+        """Pick one option (a list, or a dict option → description): a Decision with ``value``,
+        ``p`` and ``probs``. ``[m] => text -> choice([...])`` is the same."""
+        return self._decide_one(Choice(prompt, options), None, system)
+
+    def yes(self, prompt: Any, *, system: Optional[str] = None) -> float:
+        """The probability (0.0–1.0) that the answer to a yes/no question is yes."""
+        return self._decide_one(Yes(prompt), None, system)
+
+    def score(self, prompt: Any, levels: Any, *, system: Optional[str] = None) -> Decision:
+        """A place on an ordered scale (``0..=3``, ``["low", "high"]``): a Decision with ``mean`` too."""
+        return self._decide_one(Score(prompt, levels), None, system)
+
+    def decide(self, state: Any, questions: Any, *, system: Optional[str] = None, workers: int = 4) -> Any:
+        """Several questions about one text: ``{"urgent": llm.Yes("..."), "team": llm.Choice("...", [...])}``
+        → a record of answers (a probability for Yes, a Decision for Choice and Score)."""
+        return _decide_many(self, state, questions, system, workers)
+
+    def _decide_one(self, question: Question, state: Optional[str], system: Optional[str]) -> Any:
+        msgs = _decide.build_messages(question, state, system if system is not None else self.system)
+        payload: Dict[str, Any] = {"model": self.name, "messages": msgs, "stream": False, "max_tokens": 1,
+                                   "temperature": 0, "logprobs": True, "top_logprobs": 20}
+        if self._thinking_off and is_loopback(urllib.parse.urlsplit(self.url).hostname):
+            # llama.cpp (--jinja) and vLLM: no <think> block before the one-token answer
+            payload["chat_template_kwargs"] = {"enable_thinking": False}
+        try:
+            data = self._request("POST", self.url + "/chat/completions", payload)
+        except LLMError as exc:
+            if exc.status != 400 or "chat_template_kwargs" not in payload:
+                raise
+            self._thinking_off = False
+            payload.pop("chat_template_kwargs")
+            data = self._request("POST", self.url + "/chat/completions", payload)
+        count = 2 if question.kind == "yes" else len(question.options)
+        probabilities, _ = _decide.letter_probabilities(data, count)
+        return _decide.result(question, probabilities)
 
     def stream(self, prompt: Union[str, List[Dict[str, Any]]], *, system: Optional[str] = None,
                temperature: Optional[float] = None, max_tokens: Optional[int] = None) -> Iterator[str]:
@@ -646,3 +689,125 @@ class Model:
 def models() -> List[str]:
     """Names of the models on the default server."""
     return Model().models()
+
+
+def _decide_many(model: Any, state: Any, questions: Any, system: Optional[str], workers: int) -> Any:
+    from concurrent.futures import ThreadPoolExecutor
+    from .prelude import Record, show
+    if not isinstance(questions, dict) or not questions:
+        raise UpsilError('decide: the questions are a dict {"name": llm.Yes("..."), ...}',
+                         'decide: вопросы — словарь {"имя": llm.Yes("..."), ...}')
+    for key, q in questions.items():
+        if not isinstance(q, Question):
+            raise UpsilError(f"decide: {show(key)} is not a question (llm.Yes, llm.Choice or llm.Score)",
+                             f"decide: {show(key)} — не вопрос (llm.Yes, llm.Choice или llm.Score)")
+    if isinstance(model, Model) and not model._name:
+        _ = model.name                         # resolve the model once, not in every thread
+    text = show(state)
+    items = list(questions.items())
+    with ThreadPoolExecutor(max_workers=max(1, min(int(workers), len(items)))) as pool:
+        answers = list(pool.map(lambda kv: model._decide_one(kv[1], text, system), items))
+    return Record((k, a) for (k, _), a in zip(items, answers))
+
+
+class SystemOne:
+    """Decisions from a server that speaks the ``/v1/systemone`` protocol: Jev by TypeSafe
+    (``https://api.typesafe.ai``, a key in ``TYPESAFE_API_KEY``) or an open one such as Kev.
+    It answers ``-> choice``, ``-> yes``, ``-> score`` and ``decide``; it does not write text."""
+
+    def __init__(self, url: Optional[str] = None, *, api_key: Optional[str] = None, model: str = "jev-latest",
+                 timeout: Optional[float] = None, system: Optional[str] = None):
+        base = (url or os.environ.get("UPSIL_SYSTEMONE_URL") or "https://api.typesafe.ai").rstrip("/")
+        if base.endswith("/v1/systemone"):
+            base = base[:-len("/v1/systemone")]
+        elif base.endswith("/v1"):
+            base = base[:-3]
+        self.url = base
+        self.api_key = api_key or os.environ.get("UPSIL_SYSTEMONE_KEY") or os.environ.get("TYPESAFE_API_KEY") or None
+        self.model = model
+        self.timeout = float(timeout) if timeout else 30.0
+        self.system = system
+
+    def __repr__(self) -> str:
+        return f'llm.SystemOne("{self.url}", model="{self.model}")'
+
+    __str__ = __repr__
+
+    def choice(self, prompt: Any, options: Any, *, system: Optional[str] = None) -> Decision:
+        return self._decide_one(Choice(prompt, options), None, system)
+
+    def yes(self, prompt: Any, *, system: Optional[str] = None) -> float:
+        return self._decide_one(Yes(prompt), None, system)
+
+    def score(self, prompt: Any, levels: Any, *, system: Optional[str] = None) -> Decision:
+        return self._decide_one(Score(prompt, levels), None, system)
+
+    def decide(self, state: Any, questions: Any, *, system: Optional[str] = None, workers: int = 4) -> Any:
+        """All the questions go in one request, as the protocol intends."""
+        from .prelude import Record, show
+        if not isinstance(questions, dict) or not questions:
+            raise UpsilError('decide: the questions are a dict {"name": llm.Yes("..."), ...}',
+                             'decide: вопросы — словарь {"имя": llm.Yes("..."), ...}')
+        sys_text = system if system is not None else self.system
+        body_questions = {}
+        for key, q in questions.items():
+            if not isinstance(q, Question):
+                raise UpsilError(f"decide: {show(key)} is not a question (llm.Yes, llm.Choice or llm.Score)",
+                                 f"decide: {show(key)} — не вопрос (llm.Yes, llm.Choice или llm.Score)")
+            body_questions[show(key)] = _decide.systemone_question(q, sys_text)
+        answers = self._post(show(state), body_questions)
+        out = []
+        for key, q in questions.items():
+            if show(key) not in answers:
+                raise LLMError(f"/v1/systemone did not answer {show(key)!r}", f"/v1/systemone не ответил на {show(key)!r}")
+            out.append((key, _decide.systemone_result(q, answers[show(key)])))
+        return Record(out)
+
+    def _decide_one(self, question: Question, state: Optional[str], system: Optional[str]) -> Any:
+        sys_text = system if system is not None else self.system
+        if state is None:        # one text holds both: the state is the text, the question points at it
+            state, question = question.text, Question(question.kind, "Answer the question in the text.",
+                                                      None if question.kind == "yes" else
+                                                      dict(zip(question.options, question.descriptions)))
+        answers = self._post(state, {"q": _decide.systemone_question(question, sys_text)})
+        if "q" not in answers:
+            raise LLMError("/v1/systemone gave no answer", "/v1/systemone не дал ответа")
+        return _decide.systemone_result(question, answers["q"])
+
+    def _post(self, state: str, questions: Dict[str, Any]) -> Dict[str, Any]:
+        url = self.url + "/v1/systemone"
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        body = _json.dumps({"model": self.model, "state": state, "questions": questions},
+                           ensure_ascii=False).encode("utf-8")
+        host = urllib.parse.urlsplit(self.url).netloc or self.url
+        deadline = time.monotonic() + self.timeout
+        delay = _RETRY_DELAY
+        while True:
+            try:
+                resp = open_url("POST", url, body=body, headers=headers, timeout=self.timeout)
+                data = _json.loads(read_all(resp, url).decode("utf-8"))
+                break
+            except NetError as exc:
+                raise LLMError(f"The decision server is not responding ({host}): {exc.reason}",
+                               f"Сервер решений не отвечает ({host}): {exc.reason}") from None
+            except ValueError:
+                raise LLMError(f"The decision server at {host} did not answer with JSON",
+                               f"Сервер решений {host} ответил не в формате JSON") from None
+            except HttpError as exc:
+                if exc.status in (429, 529, 503) and time.monotonic() + delay < deadline:
+                    time.sleep(delay)          # rate limited or overloaded: back off and retry
+                    delay = min(delay * 2, 8.0)
+                    continue
+                if exc.status in (401, 403):
+                    raise LLMError(f"The decision server refused the API key (HTTP {exc.status}). "
+                                   f"Set TYPESAFE_API_KEY or UPSIL_SYSTEMONE_KEY",
+                                   f"Сервер решений не принял ключ API (HTTP {exc.status}). "
+                                   f"Задайте TYPESAFE_API_KEY или UPSIL_SYSTEMONE_KEY", status=exc.status) from None
+                raise LLMError(f"The decision server answered HTTP {exc.status}: {exc.detail()}",
+                               f"Сервер решений ответил HTTP {exc.status}: {exc.detail()}", status=exc.status) from None
+        answers = data.get("answers") if isinstance(data, dict) else None
+        if not isinstance(answers, dict):
+            raise LLMError("The /v1/systemone reply has no answers", "В ответе /v1/systemone нет answers")
+        return answers

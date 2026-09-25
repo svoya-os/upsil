@@ -190,13 +190,16 @@ class Attr(Node):
 
 @dataclass
 class Prompt(Node):
-    """``[model] => text`` / ``[model, system: s] => text -> json`` / ``... -> json(schema)``."""
+    """``[model] => text`` / ``[model, system: s] => text -> json`` / ``... -> json(schema)``;
+    decisions: ``-> choice(options)``, ``-> yes``, ``-> score(levels)`` (``decision`` is the word)."""
     span: Span
     model: Node
     text: Node
     system: Optional[Node] = None
     as_json: bool = False
     schema: Optional[Node] = None
+    decision: Optional[str] = None
+    options: Optional[Node] = None
 
 
 @dataclass

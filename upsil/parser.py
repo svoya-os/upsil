@@ -928,9 +928,26 @@ class Parser:
             if self.at_op("->"):
                 self.advance()
                 fmt = self.peek()
+                if fmt.kind == "NAME" and fmt.value in ("choice", "score", "yes"):
+                    self.advance()
+                    options = None
+                    end = fmt.span
+                    if fmt.value == "yes":
+                        if self.at_op("("):
+                            self.fail(self.peek().span, "'-> yes' takes no options: its answer is the probability of yes",
+                                      "у '-> yes' нет вариантов: ответ — вероятность «да»")
+                    else:
+                        if not self.at_op("("):
+                            what = ("the options: -> choice([\"a\", \"b\"])", "варианты: -> choice([\"a\", \"b\"])") \
+                                if fmt.value == "choice" else ("the levels: -> score(0..=3)", "уровни: -> score(0..=3)")
+                            self.fail(fmt.span, f"'-> {fmt.value}' needs {what[0]}", f"'-> {fmt.value}' требует {what[1]}")
+                        self.advance()
+                        options = self.expression()
+                        end = self.expect_op(")").span
+                    return Prompt(opening.span.to(end), items[0], text, system, decision=fmt.value, options=options)
                 if fmt.kind != "NAME" or fmt.value != "json":
-                    self.fail(fmt.span, "only '-> json' is supported after a prompt",
-                              "после промпта поддерживается только '-> json'")
+                    self.fail(fmt.span, "after a prompt: '-> json', '-> choice([...])', '-> yes' or '-> score(...)'",
+                              "после промпта: '-> json', '-> choice([...])', '-> yes' или '-> score(...)'")
                 self.advance()
                 as_json = True
                 end = fmt.span

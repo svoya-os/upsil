@@ -158,6 +158,38 @@ class Checker:
     def error(self, span: Span, en: str, ru: str) -> None:
         self.diags.append(Diagnostic(span, en, ru))
 
+    def check_options(self, node: Prompt) -> None:
+        """``-> choice([...])`` / ``-> score(...)`` with literal options: the count and repeats."""
+        opts = node.options
+        kind = node.decision
+        high = 26 if kind == "choice" else 10
+        keys: List[object] = []
+        count: Optional[int] = None
+        if isinstance(opts, ListLit):
+            count = len(opts.items)
+            keys = [i.parts[0] if isinstance(i, Str) and i.is_plain and len(i.parts) == 1 else
+                    (i.value if isinstance(i, Num) else None) for i in opts.items]
+        elif isinstance(opts, DictLit):
+            count = len(opts.items)
+            keys = [k.parts[0] if isinstance(k, Str) and k.is_plain and len(k.parts) == 1 else None
+                    for k, _ in opts.items]
+        elif isinstance(opts, Range) and isinstance(opts.start, Num) and isinstance(opts.end, Num) \
+                and isinstance(opts.start.value, int) and isinstance(opts.end.value, int):
+            count = max(0, opts.end.value - opts.start.value + (1 if opts.inclusive else 0))
+        if count is not None and not 2 <= count <= high:
+            what = ("options", "вариантов") if kind == "choice" else ("levels", "уровней")
+            self.error(opts.span, f"'-> {kind}' takes from 2 to {high} {what[0]}, here {count}",
+                       f"'-> {kind}' принимает от 2 до {high} {what[1]}, а здесь {count}")
+            return
+        seen: Set[object] = set()
+        for k in keys:
+            if k is None:
+                continue
+            if k in seen:
+                self.error(opts.span, f"option {k!r} is listed twice", f"вариант {k!r} указан дважды")
+                return
+            seen.add(k)
+
     # ------------------------------------------------------------------ entry
     def check(self, module: Module) -> CheckResult:
         self.block_stmts(module.body, self.session.module_block)
@@ -684,6 +716,9 @@ class Checker:
             self.expr(node.text, block)
             if node.schema is not None:
                 self.expr(node.schema, block)
+            if node.options is not None:
+                self.expr(node.options, block)
+                self.check_options(node)
         elif t is TupleLit:
             for item in node.items:
                 self.expr(item, block)

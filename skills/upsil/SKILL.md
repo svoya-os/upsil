@@ -1,17 +1,17 @@
 ---
 name: upsil
-description: Write, run and fix programs in UpsiL (упсиль), the SOS language for AI scripts (.upl files) — prompts to a local LLM, JSON answers of a given shape, search over notes, PyTorch networks, CSV data.
+description: Write, run and fix programs in UpsiL (упсиль), the SOS language for AI scripts (.upl files) — prompts to a local LLM, JSON answers of a given shape, decisions with probabilities, search over notes, PyTorch networks, CSV data.
 aliases: упсил, upsil
 ---
 # UpsiL
 
-UpsiL compiles to readable Python. Files end in `.upl`; Kotlin-like syntax, no semicolons.
+UpsiL compiles to readable Python. Files: `.upl`; Kotlin-like syntax.
 
-- Run: `sos run main.upl ARGS` (environment header, progress in the SOS bar) or `upsil run main.upl ARGS`.
-- Check without running: `upsil check main.upl`. Tests: `upsil test` runs every `fun test_...()` in `test_*.upl`.
-- New project: `sos new NAME --template upsil`. Local model: `sos models serve` (UpsiL finds it at 127.0.0.1:8080).
-- PyTorch for `nn`: `uv add torch` in the project folder; `sos run` then uses the project's `.venv`.
-- Spec, tutorial, examples: /usr/share/doc/upsil.
+- Run: `sos run main.upl ARGS` (progress in the SOS bar) or `upsil run main.upl ARGS`.
+- Check: `upsil check main.upl`. Tests: `upsil test` runs `fun test_...()` in `test_*.upl`.
+- New project: `sos new NAME --template upsil`. Local model: `sos models serve` (found automatically).
+- PyTorch for `nn`: `uv add torch` in the project; `sos run` uses its `.venv`.
+- Docs and examples: /usr/share/doc/upsil.
 
 ## Language
 
@@ -29,18 +29,14 @@ while n > 100 { break }
 val sign = if (n > 0) "+" else "-"
 val evens = [x for x in 0..10 if x % 2 == 0]
 val (lo, hi) = (min(evens), max(evens))
-try { print(10 / n) } catch (e: ZeroDivisionError) { print("ноль") } catch (e) { throw } finally { print("ok") }
+try { print(10 / n) } catch (e: ZeroDivisionError) { print("ноль") } finally { print("ok") }
 assert len(evens) == 5, "evens = {evens}"
-class Point {
-    val x: float
-    val y: float
-    fun norm() { return (x * x + y * y) ** 0.5 }
-}
+class Point { val x: float; val y: float; fun norm() { return (x * x + y * y) ** 0.5 } }
 print(Point(3, 4).norm(), div(7, 2), statistics.mean([1, 2]))   // div: integer division; / is float
 ```
 
-`true`, `false`, `null`; `and`, `or`, `not`; `//` comments; `error("...")` or `throw "..."` to fail.
-Modules: `llm rag nn csv json fs re http sys math time random ui`; `sys.args` holds the arguments.
+`true`/`false`/`null`, `and`/`or`/`not`, `//` comments; `throw "..."` fails.
+Modules: `llm rag nn csv json fs re http sys math time random ui`; arguments: `sys.args`.
 
 ## Models
 
@@ -49,7 +45,7 @@ import llm
 llm m = llm.Model(temperature = 0.2)   // or llm.Model("qwen3.5-4b")
 val text = "UpsiL — язык для ИИ-скриптов."
 val short = [m] => "Перескажи одним предложением: {text}"
-val word = [m, system: "Отвечай одним словом"] => "Столица Франции?"
+val word = [m, system: "Одним словом"] => "Столица Франции?"
 val shape = {"label": ["pos", "neg", "neu"], "score": float, "note?": str}
 try {
     val a = [m] => "Оцени тональность: {text}" -> json(shape)
@@ -58,10 +54,13 @@ try {
     print("не тот JSON:", e.reply)
 }
 val answers = m.ask_all(["Тема: {t}" for t in ["кошки", "GPU"]], schema = shape, errors = "null")
+val team = [m] => "Кто ответит? {text}" -> choice(["billing", "tech"])   // team.value, team.p
+val spam = [m] => "Это спам? {text}" -> yes                             // probability of yes
 ```
 
-A wrong JSON shape is asked again once, then raises `llm.FormatError`; other model failures are `llm.Error`.
-`ask_all` sends 4 requests at a time and shows progress in the bar.
+A wrong JSON shape is asked again once, then `llm.FormatError`; other failures are `llm.Error`.
+Decisions (`-> choice(...)`, `-> yes`, `-> score(0..=3)`) give probabilities in one model step: act when
+`p` is high, else ask a human; `m.decide(text, {"k": llm.Yes("?")})` asks several at once.
 
 ## Data, search, networks
 
@@ -81,14 +80,14 @@ val x = nn.randn(256, 2)
 val y = (x[:, 0] * x[:, 1] > 0).long()
 val net = Net()
 nn.fit(net, x, y, epochs = 30, lr = 0.01)     // progress goes to the SOS bar
-print(nn.accuracy(net, x, y), nn.count_params(net))
+print(nn.accuracy(net, x, y))
 ```
 
-`with nn.evaluating(net) { }`: eval mode, no gradients. `nn.auto_device()`: "cuda", "mps" or "cpu".
+`with nn.evaluating(net) { }`: eval mode, no gradients.
 
 ## Writing UpsiL well
 
-- Declare names with `val`/`var` before use; a `val` cannot be reassigned. Imports go at the top level.
+- Declare names with `val`/`var` first; a `val` cannot be reassigned; imports only at the top.
 - Bodies of `if`/`for`/`while` always need `{ }`; an if-expression needs parentheses and `else`.
-- Not in 0.3: inheritance, block lambdas, `?.`, `?:`, nested destructuring (use a named `fun`).
-- Run `upsil check FILE` after writing: errors point at `.upl` lines and suggest names.
+- Not yet: inheritance, block lambdas, `?.`, `?:`, nested destructuring (use a named `fun`).
+- Run `upsil check FILE` after writing.

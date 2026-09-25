@@ -546,6 +546,11 @@ class Codegen:
         keywords = []
         if n.system is not None:
             keywords.append(self.mk(ast.keyword, n.system.span, arg="system", value=self.expr(n.system)))
+        if n.decision is not None:
+            args = [self.expr(n.model), self.expr(n.text), self.mk(ast.Constant, n.span, value=n.decision)]
+            if n.options is not None:
+                args.append(self.expr(n.options))
+            return self.call(self.prelude("decide", n.span), args, n.span, keywords)
         if n.as_json:
             keywords.append(self.mk(ast.keyword, n.span, arg="json", value=self.mk(ast.Constant, n.span, value=True)))
         if n.schema is not None:

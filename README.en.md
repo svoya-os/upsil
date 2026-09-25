@@ -18,12 +18,13 @@ val question = "How do I check a backup?"
 print([m] => "Answer from the notes:\n{notes.context(question)}\n\nQuestion: {question}")
 ```
 
-> **Status: v0.3 is an early version.** The language is small and honest: everything the
+> **Status: v0.4 is an early version.** The language is small and honest: everything the
 > documentation describes works and is covered by tests, including the code examples in the
 > documentation itself. Version 0.3 grew out of using the language: we wrote neural-network
 > training, review labeling with a model, prompt comparison and log parsing in it, and added
-> what was missing ([what was inconvenient and what changed](docs/dogfood.md), in Russian).
-> What is still missing is listed in ["Not in v0.3"](docs/spec.en.md#14-not-in-v03). The
+> what was missing ([what was inconvenient and what changed](docs/dogfood.md), in Russian);
+> 0.4 added decisions with probabilities. What is still missing is listed in
+> ["Not in v0.4"](docs/spec.en.md#14-not-in-v04). The
 > documentation is written in Russian first; the specification and this README are also in
 > English.
 
@@ -149,8 +150,9 @@ val text = "UpsiL compiles to Python and works with local models."
 val summary = [m] => "Summarize in five words: {text}"
 val strict = [m, system: "Answer only yes or no"] => "Is Python a programming language?"
 val facts = [m] => "Name the language and the goal: {text}" -> json({"language": str, "goal": str})
+val kind = [m] => "What is the text about? {text}" -> choice(["code", "food", "sport"])   // «code (97%)»
 
-print(summary, strict, facts["language"])
+print(summary, strict, facts["language"], kind.p)
 for (piece in m.stream("Write a haiku about compilers")) {
     print(piece, end = "")                            // the answer as it is generated
 }
@@ -163,6 +165,10 @@ for (piece in m.stream("Write a haiku about compilers")) {
   text and never executed.
 - `m.ask_all(questions, schema = shape, errors = "null")` asks many questions in parallel and
   does not stop because of one bad answer.
+- `-> choice([...])`, `-> yes`, `-> score(0..=3)` return a decision with probabilities instead
+  of text, in one pass of the model: the program acts on its own when the model is sure and
+  calls a human when it is not. `m.decide(text, {...})` asks several such questions at once,
+  and `llm.SystemOne` sends them to a server that speaks `/v1/systemone` (Jev, for one).
 - `rag.VectorStore()` searches by meaning if the server can compute embeddings; otherwise it
   says so and searches by words (BM25). The index is saved as JSON.
 - `model` becomes a `torch.nn.Module`; layers are fields, `forward` is a method.
@@ -192,7 +198,7 @@ Kate, documentation and examples in `/usr/share/doc/upsil`. Also:
 - `sos new name --template upsil` creates a project: `main.upl`, a file with the prompts and
   tests for `upsil test`;
 - Jackson knows the language: the package installs the skill
-  [skills/upsil/SKILL.md](skills/upsil/SKILL.md), so "write it in UpsiL" gets 0.3 code.
+  [skills/upsil/SKILL.md](skills/upsil/SKILL.md), so "write it in UpsiL" gets current code.
 
 Outside SOS any OpenAI-compatible server works (llama.cpp, Ollama, vLLM, LM Studio or a cloud
 API): set `UPSIL_LLM_URL` (and `UPSIL_LLM_KEY` if a key is needed) or put them in
@@ -215,6 +221,18 @@ cd vscode-upsil && npx @vscode/vsce package && code --install-extension upsil-la
 mkdir -p ~/.local/share/gtksourceview-5/language-specs && cp editor/upsil.lang ~/.local/share/gtksourceview-5/language-specs/
 mkdir -p ~/.local/share/org.kde.syntax-highlighting/syntax && cp editor/upsil.xml ~/.local/share/org.kde.syntax-highlighting/syntax/
 ```
+
+## What is new in 0.4
+
+**Decisions.** Models are often needed not for text but for a choice: which team answers a
+ticket, whether a message is spam, how annoyed a customer is. That used to mean asking for JSON
+and hoping for the right shape; now there are `-> choice([...])`, `-> yes` and `-> score(...)`.
+The model does not write an answer; it picks an option in one pass over the text, and UpsiL
+returns the probabilities, so the program itself decides when to trust the model and when to
+call a human ([examples/triage.upl](examples/triage.upl)). It works on the local server of SOS;
+the cloud model Jev and servers compatible with it are reached through `llm.SystemOne`. Details
+are in the [specification](docs/spec.en.md#96-decisions-choice-yes-score) and
+[CHANGELOG.md](CHANGELOG.md).
 
 ## What is new in 0.3
 

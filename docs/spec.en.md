@@ -1,8 +1,8 @@
-# UpsiL 0.3 language specification
+# UpsiL 0.4 language specification
 
 [Русская версия](spec.md) · [Tutorial (Russian)](tutorial.md) · [README](../README.en.md)
 
-> **Status: v0.3 is an early version.** This document describes only what is implemented and
+> **Status: v0.4 is an early version.** This document describes only what is implemented and
 > covered by tests (`python3 -m unittest discover -s tests`). The code examples here are
 > tested too: every block compiles, and the output shown is the real output. If `upsil`
 > behaves differently from this text, that is a bug; please report it.
@@ -22,7 +22,7 @@
 11. [Built-in functions](#11-built-in-functions)
 12. [Modules](#12-modules)
 13. [Compiling, running and errors](#13-compiling-running-and-errors)
-14. [Not in v0.3](#14-not-in-v03)
+14. [Not in v0.4](#14-not-in-v04)
 
 ## 1. Overview
 
@@ -145,6 +145,7 @@ Contextual words are special in one place only, and ordinary names everywhere el
 | `vector_store` | `vector_store db = ...` declares a store (9.3) |
 | `py` | `import py "numpy"` imports a Python module |
 | `json` | `[m] => "..." -> json` asks for a JSON answer |
+| `choice`, `yes`, `score` | `[m] => "..." -> choice([...])` asks for a decision with probabilities (9.6) |
 
 ### 2.5. Numbers
 
@@ -315,7 +316,8 @@ tuple         = "(" expression "," [ expression { "," expression } [ "," ] ] ")"
 list          = "[" [ expression { "," expression } [ "," ] ] "]" ;
 dict          = "{" [ expression ":" expression { "," expression ":" expression } [ "," ] ] "}" ;
 prompt        = "[" expression [ "," "system" ":" expression ] "]" "=>" expression
-                [ "->" "json" [ "(" expression ")" ] ] ;
+                [ "->" ( "json" [ "(" expression ")" ] | "choice" "(" expression ")"
+                       | "score" "(" expression ")" | "yes" ) ] ;
 if_expr       = "if" "(" expression ")" expression "else" expression ;
 lambda        = ( NAME | "(" [ NAME [ ":" type ] { "," NAME [ ":" type ] } ] ")" ) "=>" expression ;
 list_comp     = "[" expression comp_for { comp_for } "]" ;
@@ -1012,6 +1014,8 @@ print(short, terse, data["name"])
 - JSON objects in the answer are records: a field reads as `data["name"]` or `data.name`
   (section 12, **json**).
 - `-> json(shape)` says what JSON is needed and checks the answer (section 9.5).
+- `-> choice([...])`, `-> yes`, `-> score(...)` return a decision with probabilities instead
+  of text (section 9.6).
 - When the answer is not the JSON asked for, the model is told what is wrong and asked again
   (`json_retries` times, 1 by default); if that does not help, the error is `llm.FormatError`,
   which can be caught: `catch (e: llm.FormatError)`; the reply text is `e.reply`.
@@ -1103,6 +1107,81 @@ for (text, a) in zip(reviews, answers) {
 }
 ```
 
+### 9.6. Decisions: `choice`, `yes`, `score`
+
+Often what you need from a model is not text but a decision: which team answers a message,
+whether it is spam, how annoyed the customer is. A prompt has three answer forms for that, and
+each one returns probabilities:
+
+```upsil
+import llm
+
+llm m = llm.Model()
+val ticket = "I cannot log in, it says «error 500»"
+val team = [m] => "Who handles this ticket? {ticket}" -> choice(["billing", "tech", "sales"])
+val urgent = [m] => "Does it need an answer today? {ticket}" -> yes
+val anger = [m] => "How annoyed is the customer? {ticket}" -> score(0..=3)
+if team.p >= 0.8 and urgent >= 0.5 {
+    print("urgent, to {team.value}; annoyance {anger.mean:.1f} of 3")
+} else {
+    print("a human decides: {team}")        // for example «tech (61%)»
+}
+```
+
+- `-> choice(options)` picks one option: a list `["a", "b"]` or a dict with descriptions
+  `{"billing": "payments and invoices", "tech": "errors and access"}`, 2 to 26 options. The
+  answer is a **decision**: `value` is the likeliest option, `p` its probability, `probs` the
+  probabilities of all options (a record). A decision equals its value: `team == "tech"`; as
+  text it shows as `tech (93%)`.
+- `-> yes` is a yes/no question; the answer is the probability of yes, from 0.0 to 1.0.
+- `-> score(levels)` places the text on a scale: a range `0..=3`, `1..=5` or words in
+  increasing order `["calm", "annoyed", "angry"]`, 2 to 10 levels. The answer is a decision
+  that also has `mean`: the expected level weighted by the probabilities (for words, the
+  position 0, 1, 2…).
+
+The model does not write an answer; it picks the letter of an option: the options are labelled
+A, B, C…, the model takes one step, and the server returns the letters' probabilities in
+`logprobs`. That is fast (one pass over the text, no generation) and works with servers that
+return probabilities: llama.cpp (the local server of SOS), vLLM, OpenAI. To a local server
+UpsiL also sends `chat_template_kwargs: {"enable_thinking": false}` so that reasoning models
+answer right away. With no probabilities, or when the model does not pick a letter (say, it
+starts to reason), the error is `llm.Error` (`llm.FormatError` in the second case) with an
+explanation: a decision with made-up probabilities is worse than an honest error.
+
+Several questions about one text: `m.decide`:
+
+```upsil
+import llm
+
+llm m = llm.Model()
+val r = m.decide("The server is down and customers are angry", {
+    "urgent": llm.Yes("Does it need an answer today?"),
+    "team": llm.Choice("Which team?", {"billing": "money", "tech": "outages", "sales": "prices"}),
+    "tone": llm.Score("How annoyed is the customer?", ["calm", "annoyed", "angry"]),
+})
+print(r.urgent, r.team, r.tone.mean)
+```
+
+The text comes first, so a server with a prompt cache (llama.cpp) processes it once, and the
+questions go in parallel (`workers`, 4 by default). The methods `m.choice(text, options)`,
+`m.yes(text)` and `m.score(text, levels)` do what the prompt forms do. Example:
+[examples/triage.upl](../examples/triage.upl).
+
+**Decision servers.** `llm.SystemOne(...)` sends the same questions to a server that speaks
+the `/v1/systemone` protocol: the cloud model Jev (TypeSafe AI, key in `TYPESAFE_API_KEY`) or
+an open compatible server.
+
+```upsil
+import llm
+
+llm j = llm.SystemOne()                          // https://api.typesafe.ai
+llm k = llm.SystemOne("http://127.0.0.1:8090")   // your own server
+val spam = [j] => "Is this spam? «You have won a million!»" -> yes
+```
+
+Such a model only decides: `[j] => "text"` without `-> choice`, `-> yes` or `-> score` is an
+error. A cloud server receives the whole text of the question.
+
 ## 10. Imports
 
 ```upsil
@@ -1162,6 +1241,16 @@ New in 0.3: `llm.Model(..., json_retries = 1)`; `ask` and `chat` take `schema` (
 `ask_all(prompts, system = null, json = false, schema = null, workers = 4, errors = "raise")`.
 Errors: `llm.Error` (any model error), `llm.FormatError` (not the JSON asked for; field
 `reply`).
+
+Decisions, new in 0.4 (9.6): `choice(text, options, system = null)`, `yes(text, system = null)`,
+`score(text, levels, system = null)`, `decide(state, questions, system = null, workers = 4)`;
+questions for `decide` are `llm.Yes(q)`, `llm.Choice(q, options)`, `llm.Score(q, levels)`;
+answers are `llm.Decision` (`value`, `p`, `probs`, and `mean` for a scale) or a probability
+for `Yes`. `llm.SystemOne(url = null, api_key = null, model = "jev-latest", timeout = null,
+system = null)` has the same methods on a `/v1/systemone` server; the address is the argument,
+`UPSIL_SYSTEMONE_URL` or `https://api.typesafe.ai`; the key is the argument,
+`UPSIL_SYSTEMONE_KEY` or `TYPESAFE_API_KEY`; `decide` sends all the questions in one request.
+On HTTP 429, 503 and 529 the request is retried within `timeout` (30 s by default).
 
 **rag**: the document store (9.3).
 `rag.VectorStore(model = null, backend = "auto", url = null, chunk_size = 1000)`; methods
@@ -1340,7 +1429,7 @@ full Python traceback.
 Input continues while a bracket is open or a line ends with an operator; an empty line ends the
 input. Names can be declared again. Exit with Ctrl-D or `:q`.
 
-## 14. Not in v0.3
+## 14. Not in v0.4
 
 Deliberately left for later: class inheritance, nameless functions with a block
 (`fun (x) { ... }`; one-expression lambdas exist), nested unpacking (`val (a, (b, c)) = ...`),

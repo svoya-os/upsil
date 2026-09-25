@@ -116,6 +116,35 @@ class AIExamplesTest(UpsilTestCase):
             self.assertEqual(set(shapes), {"json_schema"})
             self.assertEqual(len(shapes), 7)                               # one answer was asked again
 
+    def test_triage(self):
+        def decide(body):
+            text = body["messages"][-1]["content"]
+            state, _, question = text.partition("\n\nQuestion: ")
+            if question.startswith("Какой отдел"):
+                for word, letter in (("деньги", "A"), ("войти", "B"), ("упало", "B"), ("тариф", "C")):
+                    if word in state:
+                        return {letter: 0.9, "A" if letter != "A" else "C": 0.1}
+                return {"A": 0.4, "B": 0.35, "C": 0.25}           # not sure: a human decides
+            if question.startswith("Нужно ответить"):
+                return {"A": 0.9, "B": 0.1} if "!" in state or "упало" in state else {"A": 0.3, "B": 0.7}
+            return {"C": 0.8, "A": 0.2} if "!" in state else {"B": 0.6, "A": 0.4}
+        with MockOpenAI(decide=decide) as mock:
+            r = self.run_example(mock, ["examples/triage.upl", "examples/data/tickets.csv"])
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertEqual(r.stdout.splitlines(), [
+                "billing (90%) · в порядке очереди · клиент недоволен",
+                "  Списали деньги дважды за один месяц, верните, пожалуйста",
+                "tech (90%) · сегодня · клиент зол",
+                "  Не могу войти в аккаунт, пишет «ошибка 500». Всё стоит, клиенты ждут!",
+                "sales (90%) · в порядке очереди · клиент недоволен",
+                "  Сколько стоит тариф для команды из десяти человек?",
+                "tech (90%) · сегодня · клиент недоволен",
+                "  Приложение опять упало при загрузке файла, это уже третий раз",
+                "человеку: 1",
+                "  ? Здравствуйте, у меня вопрос",
+            ])
+            self.assertEqual(len(mock.chat_requests()), 15)                # 5 tickets × 3 questions
+
     def test_prompt_eval(self):
         def reply(body):
             text = body["messages"][-1]["content"]
