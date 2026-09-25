@@ -117,6 +117,8 @@ class Session:
             sym.fixed = True
             self.builtins[name] = sym
         self.used_names: Set[str] = set(BUILTINS) | set(MODULES)
+        # REPL: declarations replaced by the current input; `val x = x + 1` reads the old x
+        self.shadowed: Dict[str, Symbol] = {}
 
 
 class CheckResult:
@@ -240,6 +242,9 @@ class Checker:
                         self.error(span, f"'{name}' is used before its declaration (line {sym.span.line})",
                                    f"'{name}' используется до объявления (строка {sym.span.line})")
                 elif b.py is cur_py and name not in b.seen:
+                    previous = self.session.shadowed.get(name) if b is self.session.module_block else None
+                    if previous is not None:
+                        return previous
                     self.error(span, f"'{name}' is used before its declaration (line {sym.span.line})",
                                f"'{name}' используется до объявления (строка {sym.span.line})")
                 return sym

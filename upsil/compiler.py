@@ -39,10 +39,12 @@ class Program:
 
 def register_source(filename: str, source: str) -> None:
     """Let tracebacks show UpsiL lines even for code that is not in a file."""
+    from .tracebacks import UPSIL_FILES
     lines = source.splitlines(True)
     if lines and not lines[-1].endswith("\n"):
         lines[-1] += "\n"
     linecache.cache[filename] = (len(source), None, lines, filename)
+    UPSIL_FILES.add(filename)
 
 
 def check_source(source: str, filename: str = "<input>", *, lint_types: bool = True,
