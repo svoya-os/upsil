@@ -199,11 +199,10 @@ class ErrorsTest(UpsilTestCase):
 
     def test_russian_messages(self):
         with lang("ru"):
-            try:
+            with self.assertRaises(CompileError) as cm:
                 tokenize("a && b")
-            except CompileError as e:
-                self.assertIn("используйте 'and' вместо '&&'", e.format())
-                self.assertIn("ошибка", e.format())
+            text = cm.exception.format()
+        self.assertIn("<input>:1:3: ошибка: используйте 'and' вместо '&&'", text)
 
 
 if __name__ == "__main__":
