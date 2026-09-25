@@ -182,6 +182,17 @@ UpsiL развивается как модуль [СОС](https://github.com/svo
   `Локальная модель не отвечает (127.0.0.1:8080). В СОС: sos models serve`;
 - тот же сервер использует ассистент Джексон, так что модели скачиваются один раз.
 
+В СОС UpsiL ставится пакетом `upsil`: команда `upsil`, подсветка в GNOME Text Editor и Kate,
+документация и примеры в `/usr/share/doc/upsil`. Кроме того:
+
+- `sos run программа.upl` показывает заголовок окружения, а прогресс (`sys.progress`, `nn.fit`,
+  `m.ask_all`) — на панели СОС; если в папке проекта есть `.venv` (например, после
+  `uv add torch`), программа запускается в нём;
+- `sos new имя --template upsil` создаёт проект: `main.upl`, файл с вопросами к модели и тесты
+  для `upsil test`;
+- Джексон знает язык: с пакетом ставится навык [skills/upsil/SKILL.md](skills/upsil/SKILL.md),
+  и на просьбу «напиши на упсиле…» он пишет код по правилам 0.3.
+
 Вне СОС подойдёт любой сервер с API OpenAI (llama.cpp, Ollama, vLLM, LM Studio или облако):
 укажите `UPSIL_LLM_URL` (и `UPSIL_LLM_KEY`, если нужен ключ) или запишите их в
 `~/.config/upsil/config.toml`.
@@ -190,7 +201,10 @@ UpsiL развивается как модуль [СОС](https://github.com/svo
 
 - VS Code — расширение в [vscode-upsil](vscode-upsil);
 - GNOME Text Editor и gedit — [editor/upsil.lang](editor/upsil.lang);
-- Kate и KWrite — [editor/upsil.xml](editor/upsil.xml).
+- Kate и KWrite — [editor/upsil.xml](editor/upsil.xml);
+- ИИ-ассистенты — навык [skills/upsil/SKILL.md](skills/upsil/SKILL.md) в формате Agent Skills
+  (шпаргалка по языку для модели): Джексон в СОС получает его с пакетом, другим агентам
+  (например, Claude Code) достаточно скопировать папку `skills/upsil` в их каталог навыков.
 
 Все три грамматики собираются из одного списка ключевых слов скриптом
 [tools/gen_syntax.py](tools/gen_syntax.py). Как установить — в

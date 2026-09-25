@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """The code in the documentation is checked like the code in examples/.
 
-In README*.md and docs/*.md:
+In README*.md, docs/*.md and skills/*/SKILL.md:
 
 * every ```upsil block must compile;
 * an ```upsil block followed by an ```output block must print exactly that
@@ -24,7 +24,8 @@ from support import ROOT, UpsilTestCase, env
 from upsil.compiler import compile_source
 from upsil.errors import CompileError
 
-DOCS = sorted([*ROOT.glob("README*.md"), *(ROOT / "docs").glob("*.md")])
+DOCS = sorted([*ROOT.glob("README*.md"), *(ROOT / "docs").glob("*.md"), *(ROOT / "skills").glob("*/SKILL.md")])
+SKILL_BODY_MAX = 4000   # Jackson (the SOS assistant) puts at most this many characters of a skill into a prompt
 FENCE = re.compile(r"^```([\w-]*)[^\n]*\n(.*?)^```\s*$", re.M | re.S)
 
 
@@ -95,6 +96,17 @@ class DocsTest(UpsilTestCase):
                     else:
                         self.assertEqual(got, output, where)
         self.assertGreater(total, 40)
+
+    def test_skill(self):
+        """skills/upsil/SKILL.md: an Agent Skill that teaches assistants (Jackson in SOS) to write UpsiL."""
+        text = (ROOT / "skills" / "upsil" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertTrue(text.startswith("---\n"))
+        head, _, body = text[4:].partition("\n---\n")
+        meta = dict(line.split(": ", 1) for line in head.splitlines())
+        self.assertEqual(meta["name"], "upsil")
+        self.assertLessEqual(len(meta["description"]), 500)
+        self.assertLessEqual(len(body.lstrip("\n")), SKILL_BODY_MAX)
+        self.assertGreaterEqual(len(blocks(body)), 3)
 
 
 if __name__ == "__main__":

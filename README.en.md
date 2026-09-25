@@ -183,6 +183,17 @@ working with AI, and talks to its local model server by default:
   `The local model is not responding (127.0.0.1:8080). On SOS: sos models serve`;
 - the assistant Jackson uses the same server, so models are downloaded once.
 
+On SOS, UpsiL is the `upsil` package: the `upsil` command, highlighting in GNOME Text Editor and
+Kate, documentation and examples in `/usr/share/doc/upsil`. Also:
+
+- `sos run program.upl` prints the environment header and shows progress (`sys.progress`,
+  `nn.fit`, `m.ask_all`) in the SOS bar; when the project folder has a `.venv` (say, after
+  `uv add torch`), the program runs in it;
+- `sos new name --template upsil` creates a project: `main.upl`, a file with the prompts and
+  tests for `upsil test`;
+- Jackson knows the language: the package installs the skill
+  [skills/upsil/SKILL.md](skills/upsil/SKILL.md), so "write it in UpsiL" gets 0.3 code.
+
 Outside SOS any OpenAI-compatible server works (llama.cpp, Ollama, vLLM, LM Studio or a cloud
 API): set `UPSIL_LLM_URL` (and `UPSIL_LLM_KEY` if a key is needed) or put them in
 `~/.config/upsil/config.toml`.
@@ -191,7 +202,10 @@ API): set `UPSIL_LLM_URL` (and `UPSIL_LLM_KEY` if a key is needed) or put them i
 
 - VS Code: the extension in [vscode-upsil](vscode-upsil);
 - GNOME Text Editor and gedit: [editor/upsil.lang](editor/upsil.lang);
-- Kate and KWrite: [editor/upsil.xml](editor/upsil.xml).
+- Kate and KWrite: [editor/upsil.xml](editor/upsil.xml);
+- AI assistants: the Agent Skill [skills/upsil/SKILL.md](skills/upsil/SKILL.md) (a cheat sheet
+  of the language for the model). Jackson on SOS gets it with the package; for other agents
+  (Claude Code, for one) copy the `skills/upsil` folder into their skills directory.
 
 All three grammars are generated from one keyword list by
 [tools/gen_syntax.py](tools/gen_syntax.py). Installation:

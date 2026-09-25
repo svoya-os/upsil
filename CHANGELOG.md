@@ -50,6 +50,12 @@ below. Everything 0.2 accepted still compiles, except programs that used the new
 - `tests/microtorch.py`, a small numpy autograd that stands in for PyTorch, so the neural
   examples and `nn` helpers really train in the tests; `tests/run_microtorch.py` runs a program
   with it.
+- `sys.progress(fraction, message = null, eta = null)`: progress in the SOS bar when the program
+  runs under `sos run` (it writes the job file named by `SVOYA_JOB_FILE`; elsewhere it does
+  nothing). `nn.fit` reports each epoch and `m.ask_all` each answer, with an estimate of the
+  time left.
+- `skills/upsil/SKILL.md`, an Agent Skill (a cheat sheet of the language for AI assistants):
+  Jackson on SOS gets it with the `upsil` package; its code is compiled by the docs tests.
 
 ### Changed
 
