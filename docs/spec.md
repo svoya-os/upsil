@@ -1251,7 +1251,10 @@ echo = true)`; методы `add_message(text)` (можно вызывать и�
 `show()`, `close()`. Нужны `python3-tk` и графический сеанс; без них — понятная ошибка.
 
 **sys** — `args` (аргументы после имени файла), `script` (имя файла), `env(name,
-default = null)`, `exit(code = 0)`, `platform`, `version` (версия UpsiL).
+default = null)`, `exit(code = 0)`, `platform`, `version` (версия UpsiL), `progress(доля, сообщение
+= null, eta = null)` — прогресс 0.0–1.0 на панели СОС, когда программа запущена через
+`sos run` (иначе ничего не делает; возвращает, показан ли он). `nn.fit` и `m.ask_all` сообщают
+свой прогресс сами.
 
 **math** — всё из модуля Python `math`: `sqrt`, `floor`, `ceil`, `log`, `sin`, `pi`, `e`,
 `inf`, `gcd`…

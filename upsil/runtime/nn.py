@@ -156,6 +156,8 @@ def fit(model: Any, x: Any, y: Any, *, epochs: int = 10, lr: float = 1e-3, batch
     history: list = []
     epochs = int(epochs)
     width = len(str(epochs))
+    from ._progress import Tracker
+    bar = Tracker(epochs)                      # the SOS bar, under `sos run`
     try:
         for epoch in range(1, epochs + 1):
             model.train()
@@ -178,6 +180,8 @@ def fit(model: Any, x: Any, y: Any, *, epochs: int = 10, lr: float = 1e-3, batch
                 if classes:
                     record["val_accuracy"] = accuracy(model, vx, vy)
             history.append(record)
+            bar.step(epoch, tr(f"epoch {epoch}/{epochs} · loss {record['loss']:.4f}",
+                               f"эпоха {epoch}/{epochs} · loss {record['loss']:.4f}"))
             if not quiet and (epoch % max(1, int(every)) == 0 or epoch == epochs):
                 line = tr(f"epoch {epoch:{width}}/{epochs}", f"эпоха {epoch:{width}}/{epochs}")
                 line += f" · loss {record['loss']:.4f}"

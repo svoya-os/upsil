@@ -11,7 +11,7 @@ import textwrap
 import unittest
 
 from mock_openai import MockOpenAI
-from support import UpsilTestCase, lang, run_cli, run_upl
+from support import UpsilTestCase, env as env_vars, lang, run_cli, run_upl
 
 from upsil.runtime import llm
 
@@ -169,6 +169,50 @@ class NNHelpersTest(UpsilTestCase):
             print(h[-1]["loss"] < 0.01, round(net.weight.item(), 1), round(net.bias.item(), 1))
             '''))
         self.assertEqual(out, "true 3.0 1.0\n")
+
+
+class ProgressTest(UpsilTestCase):
+    """Under `sos run` (SVOYA_JOB_FILE) programs show progress in the SOS bar."""
+
+    def job(self, d):
+        path = os.path.join(d, "job.json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"v": 1, "id": "t", "label": "x", "state": "running", "progress": None}, f)
+        return path
+
+    def read(self, path):
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+
+    def test_sys_progress_and_ask_all(self):
+        with tempfile.TemporaryDirectory() as d, MockOpenAI() as mock:
+            path = self.job(d)
+            with env_vars(SVOYA_JOB_FILE=path):
+                out = run_upl(f'import sys\nimport llm\nprint(sys.progress(0.5, "половина"))\n'
+                              f'val m = llm.Model(url = "{mock.url}")\nprint(len(m.ask_all(["a", "b", "c"])))')
+            self.assertEqual(out, "true\n3\n")
+            job = self.read(path)
+            self.assertEqual((job["progress"], job["message"]), (1.0, "answers 3/3"))
+            self.assertIn("etaSec", job)
+        self.assertEqual(run_upl('import sys\nprint(sys.progress(0.5))'), "false\n")
+
+    @unittest.skipUnless(importlib.util.find_spec("numpy") is not None, "microtorch needs numpy")
+    def test_fit_reports_epochs(self):
+        import microtorch
+        from upsil.runtime import nn
+        undo = microtorch.install()
+        saved, nn._torch = nn._torch, None
+        try:
+            with tempfile.TemporaryDirectory() as d:
+                path = self.job(d)
+                with env_vars(SVOYA_JOB_FILE=path):
+                    run_upl("import nn\nval x = nn.randn(8, 2)\nnn.fit(nn.Linear(2, 1), x, x[:, :1], epochs = 3, quiet = true)")
+                job = self.read(path)
+                self.assertEqual(job["progress"], 1.0)
+                self.assertTrue(job["message"].startswith("epoch 3/3 · loss "), job)
+        finally:
+            nn._torch = saved
+            undo()
 
 
 class RecordsTest(UpsilTestCase):

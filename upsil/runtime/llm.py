@@ -443,8 +443,21 @@ class Model:
                 if errors == "null":
                     return None
                 raise
+        from ._progress import Tracker
+        from ..i18n import tr
+        bar = Tracker(len(items))              # the SOS bar, under `sos run`
+        done = [0]
+        lock = __import__("threading").Lock()
+
+        def counted(item: Any) -> Any:
+            try:
+                return one(item)
+            finally:
+                with lock:
+                    done[0] += 1
+                    bar.step(done[0], tr(f"answers {done[0]}/{len(items)}", f"ответов {done[0]}/{len(items)}"))
         with ThreadPoolExecutor(max_workers=max(1, int(workers))) as pool:
-            return list(pool.map(one, items))
+            return list(pool.map(counted, items))
 
     def stream(self, prompt: Union[str, List[Dict[str, Any]]], *, system: Optional[str] = None,
                temperature: Optional[float] = None, max_tokens: Optional[int] = None) -> Iterator[str]:

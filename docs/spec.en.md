@@ -1245,7 +1245,10 @@ echo = true)`; methods `add_message(text)` (callable from any thread), `on_submi
 `python3-tk` and a graphical session; without them the error says so.
 
 **sys**: `args` (the arguments after the file name), `script` (the file name),
-`env(name, default = null)`, `exit(code = 0)`, `platform`, `version` (the UpsiL version).
+`env(name, default = null)`, `exit(code = 0)`, `platform`, `version` (the UpsiL version),
+`progress(fraction, message = null, eta = null)`: progress 0.0–1.0 in the SOS bar when the
+program runs under `sos run` (it does nothing elsewhere and returns whether it was shown).
+`nn.fit` and `m.ask_all` report their own progress.
 
 **math**: everything from Python's `math` module: `sqrt`, `floor`, `ceil`, `log`, `sin`, `pi`,
 `e`, `inf`, `gcd`...
